@@ -75,15 +75,6 @@ $signalSlotDispatcher->connect(
 // Hook into \Subugoe\Find\Controller
 $signalSlotDispatcher->connect(
     'Subugoe\Find\Controller\SearchController',
-    'detailActionBeforeRender',
-    'Slub\SlubFindExtend\Slots\RedirectOldId',
-    'redirect',
-    false
-);
-
-// Hook into \Subugoe\Find\Controller
-$signalSlotDispatcher->connect(
-    'Subugoe\Find\Controller\SearchController',
     'initializeActionAfterArgumentsFilled',
     'Slub\SlubFindExtend\Slots\ModifyArguments',
     'modify',
@@ -97,3 +88,27 @@ if (!is_array($TYPO3_CONF_VARS['SYS']['caching']['cacheConfigurations'][ $cacheK
     $TYPO3_CONF_VARS['SYS']['caching']['cacheConfigurations'][ $cacheKey ]['backend'] = 'TYPO3\\CMS\\Core\\Cache\\Backend\\Typo3DatabaseBackend';
     $TYPO3_CONF_VARS['SYS']['caching']['cacheConfigurations'][ $cacheKey ]['options'] = array();
 }
+
+
+if (TYPO3_MODE === 'BE') {
+	$languageDir = $_EXTKEY . '/Resources/Private/Language/';
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['Slub\\SlubFindExtend\\Task\\SendEnrichSolrResultLogTask'] = [
+			'extension'        => $_EXTKEY,
+			'title'            => 'LLL:EXT:' . $languageDir . 'locallang_be.xlf:tasks.enricherrorlog.name',
+			'description'      => 'LLL:EXT:' . $languageDir . 'locallang_be.xlf:tasks.enricherrorlog.description',
+			'additionalFields' => Slub\SlubFindExtend\Task\SendEnrichSolrResultLogTaskAdditionalFieldProvider::class
+	];
+}
+
+$GLOBALS['TYPO3_CONF_VARS']['LOG']['Slub']['SlubFindExtend']['Slots']['writerConfiguration'] = [
+    \TYPO3\CMS\Core\Log\LogLevel::ERROR => [
+        \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
+            'logFile' => \TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult.log'
+        ]
+    ],
+    \TYPO3\CMS\Core\Log\LogLevel::WARNING => [
+        \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
+            'logFile' => \TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichError.log'
+        ]
+    ]
+];

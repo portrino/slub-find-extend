@@ -28,8 +28,8 @@ class LinksFromMarcFullrecordService
      */
     public function getLinks($fullrecord, $isil = null, $unique = false, $merged = false)
     {
-        $defaultPrefix = 'http://wwwdb.dbod.de/login?url=';
-        $noPrefixHosts = ['wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de'];
+        $defaultPrefix = 'https://wwwdb.dbod.de/login?url=';
+        $noPrefixHosts = ['wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de', 'mediathek.slub-dresden.de', 'ezb.ur.de', 'dbis.uni-regensburg.de', 'www.bibliothek.uni-regensburg.de',];
         $blacklistLabel = ['Kostenfrei', 'Volltext'];
 
         $resourceLinks = [];
@@ -128,7 +128,8 @@ class LinksFromMarcFullrecordService
             return [
                 'isil' => $isilLinks,
                 'resource' => $resourceLinks,
-                'related' => $relatedLinks
+                'related' => $relatedLinks,
+                'count' => sizeof($isilLinks) + sizeof($resourceLinks) + sizeof($relatedLinks)
             ];
         }
     }
