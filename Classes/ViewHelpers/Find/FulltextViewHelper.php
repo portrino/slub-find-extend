@@ -2,28 +2,22 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Find;
 
-/**
- *
- */
-
 use Slub\SlubFindExtend\Services\FulltextService;
-use Solarium\QueryType\Select\Result\Document;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class FulltextViewHelper extends AbstractViewHelper
 {
     /**
      * @var FulltextService
      */
-    protected static $fulltextService = null;
+    protected static $fulltextService;
 
     /**
      * Registers own arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('document', '\Solarium\QueryType\Select\Result\Document', 'Result document', true);
@@ -42,9 +36,8 @@ class FulltextViewHelper extends AbstractViewHelper
 
     private static function getFulltextService()
     {
-        if (null === static::$fulltextService) {
-            $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-            static::$fulltextService = $objectManager->get(FulltextService::class);
+        if (static::$fulltextService === null) {
+            static::$fulltextService = GeneralUtility::makeInstance(FulltextService::class);
         }
 
         return static::$fulltextService;

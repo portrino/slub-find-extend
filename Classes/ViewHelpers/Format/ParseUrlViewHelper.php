@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Gets splitted URL via parse_url
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -14,9 +13,8 @@ class ParseUrlViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('url', 'string', 'URL string', true, null);

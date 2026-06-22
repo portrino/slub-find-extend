@@ -54,37 +54,29 @@ namespace Slub\SlubFindExtend\ViewHelpers\Find;
  * a fully controllable way.
  *
  * @author Georg Ringer
- * @package Vhs
- * @subpackage ViewHelpers\Page\Header
  */
 
-
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class TitleViewHelper extends AbstractViewHelper
 {
     /**
      * Arguments initialization
-     *
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('title', 'string', 'Title tag content');
         $this->registerArgument('whitespaceString', 'string', 'String used to replace groups of white space characters, one replacement inserted per group', false, ' ');
     }
 
-    /**
-     * @return void
-     */
     public static function renderStatic(
         array $arguments,
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
-    ) {
-        if (TYPO3_MODE == 'BE') {
+    ): void {
+        if (\TYPO3\CMS\Core\Http\ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isBackend()) {
             return;
         }
         if (!empty($arguments['title'])) {

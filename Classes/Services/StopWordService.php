@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\Services;
 
 /**
  * Class StopWordService
- * @package Slub\SlubFindExtend\Services
  */
 class StopWordService
 {
@@ -13,7 +12,7 @@ class StopWordService
      */
     private function getStopWords()
     {
-        return array('A','ALS','AM','AN','AND','ARE','AS','AT','AUF','AUS','BE','BUT','BY','DAS','DASS','DAß','DER','DICH','DIE','DIR','DU','DURCH','EINE','EINEM','EINEN','EINER','EINES','ER','ES','FOR','FÜR','IF','IHR','IHRE','IHRES','IM','IN','INTO','IS','IST','IT','KEIN','MEIN','MICH','MIR','MIT','NO','NOT','ODER','OF','OHNE','ON','OR','S','SEIN','SIE','SUCH','T','THAT','THE','THEIR','THEN','THERE','THESE','THEY','THIS','TO','UND','VON','WAR','WAS','WEGEN','WER','WIE','WILL','WIR','WIRD','WITH');
+        return ['A', 'ALS', 'AM', 'AN', 'AND', 'ARE', 'AS', 'AT', 'AUF', 'AUS', 'BE', 'BUT', 'BY', 'DAS', 'DASS', 'DAß', 'DER', 'DICH', 'DIE', 'DIR', 'DU', 'DURCH', 'EINE', 'EINEM', 'EINEN', 'EINER', 'EINES', 'ER', 'ES', 'FOR', 'FÜR', 'IF', 'IHR', 'IHRE', 'IHRES', 'IM', 'IN', 'INTO', 'IS', 'IST', 'IT', 'KEIN', 'MEIN', 'MICH', 'MIR', 'MIT', 'NO', 'NOT', 'ODER', 'OF', 'OHNE', 'ON', 'OR', 'S', 'SEIN', 'SIE', 'SUCH', 'T', 'THAT', 'THE', 'THEIR', 'THEN', 'THERE', 'THESE', 'THEY', 'THIS', 'TO', 'UND', 'VON', 'WAR', 'WAS', 'WEGEN', 'WER', 'WIE', 'WILL', 'WIR', 'WIRD', 'WITH'];
     }
 
     /**
@@ -22,7 +21,7 @@ class StopWordService
      */
     private function stripPuntuations($querystring)
     {
-        return str_replace(array(',', '.', ':', ';', '?', '!', '\'', '(', ')', '&', '$', '[', ']'), array(), $querystring);
+        return str_replace([',', '.', ':', ';', '?', '!', '\'', '(', ')', '&', '$', '[', ']'], [], $querystring);
     }
 
     /**

@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Splits a string with parse_url
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -14,9 +13,8 @@ class CleanUrnLinkViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('link', 'string', 'URL string', true, null);
@@ -36,20 +34,20 @@ class CleanUrnLinkViewHelper extends AbstractViewHelper
             return '';
         }
 
-        if (substr($link, 0, 4) === "urn:") {
-            return 'http://nbn-resolving.de/'.$link;
+        if (substr($link, 0, 4) === 'urn:') {
+            return 'http://nbn-resolving.de/' . $link;
         }
 
         // HOTFIX
         if (strpos($link, 'lynda.com') !== false) {
-            return $link.'?org=slub-dresden.de';
+            return $link . '?org=slub-dresden.de';
         }
 
         // HOTFIX
         if (strpos($link, 'ezeit') !== false) {
-            return $link.'&bibid=SLUB';
+            return $link . '&bibid=SLUB';
         }
 
-        return 'https://wwwdb.dbod.de/login?url='.$link;
+        return 'https://wwwdb.dbod.de/login?url=' . $link;
     }
 }

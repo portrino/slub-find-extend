@@ -13,9 +13,8 @@ class ParseMarcFieldViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('field', 'string', 'The marc field string', false, null);
@@ -40,7 +39,7 @@ class ParseMarcFieldViewHelper extends AbstractViewHelper
                 $fieldData = explode('', $field);
 
                 if ($arguments['ignoreindicators'] !== true && strlen(trim($fieldData[0])) > 0) {
-                    $index = intval(substr($fieldData[0], 0, 1));
+                    $index = (int)(substr($fieldData[0], 0, 1));
 
                     if (!is_array($output[$index])) {
                         $output[$index] = [];

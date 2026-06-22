@@ -15,14 +15,13 @@ namespace Slub\SlubFindExtend\Slots;
  * The TYPO3 project - inspiring people to share!
  */
 use Slub\SlubFindExtend\Services\SessionHandlerService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
-use Solarium\QueryType\Select\Result\Document;
 
 /**
  * Slot implementation before the
  *
  * @category    Slots
- * @package     TYPO3
  */
 class ModifyArguments
 {
@@ -35,33 +34,20 @@ class ModifyArguments
     protected $settings;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
-     */
-    protected $configurationManager;
-
-    /**
-     * @param \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager
-     * @return void
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
-    {
-        $this->configurationManager = $configurationManager;
-        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS);
-    }
-
-    /**
-     *
      * @var SessionHandlerService
      */
     protected $sessionHandler;
 
     /**
-     *
-     * @param SessionHandlerService $sessionHandler
+     * @var ConfigurationManagerInterface
      */
-    public function injectSessionHandler(SessionHandlerService $sessionHandler)
+    protected $configurationManager;
+
+    public function __construct(?ConfigurationManagerInterface $configurationManager = null, ?SessionHandlerService $sessionHandler = null)
     {
-        $this->sessionHandler = $sessionHandler;
+        $this->configurationManager = $configurationManager ?? GeneralUtility::makeInstance(ConfigurationManagerInterface::class);
+        $this->sessionHandler = $sessionHandler ?? GeneralUtility::makeInstance(SessionHandlerService::class);
+        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'Find', 'Find');
     }
 
     /**
@@ -69,16 +55,21 @@ class ModifyArguments
      *
      * @param array &$assignments
      */
-    public function modify(&$arguments)
+    public function modify(&$arguments): void
     {
-        if (strlen($arguments['id']) > 0) {
-            if (is_array($arguments['underlyingQuery']) && (count($arguments['underlyingQuery']) > 0)) {
-                $this->sessionHandler->writeToSession($arguments['underlyingQuery'], $arguments['id'].'_underlyingQuery');
-            } else {
-                $storedUnderlyingQuery = $this->sessionHandler->restoreFromSession($arguments['id'].'_underlyingQuery');
-                if ($storedUnderlyingQuery) {
-                    $arguments['underlyingQuery'] = $storedUnderlyingQuery;
-                }
+        $id = $arguments['id'] ?? '';
+        if (!is_scalar($id) || (string)$id === '') {
+            return;
+        }
+        $id = (string)$id;
+        $underlyingQuery = $arguments['underlyingQuery'] ?? null;
+
+        if (is_array($underlyingQuery) && count($underlyingQuery) > 0) {
+            $this->sessionHandler->writeToSession($underlyingQuery, $id . '_underlyingQuery');
+        } else {
+            $storedUnderlyingQuery = $this->sessionHandler->restoreFromSession($id . '_underlyingQuery');
+            if ($storedUnderlyingQuery) {
+                $arguments['underlyingQuery'] = $storedUnderlyingQuery;
             }
         }
     }

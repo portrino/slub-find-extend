@@ -30,9 +30,8 @@ class RemoveKeyFromArrayViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'Array to reduce', true);

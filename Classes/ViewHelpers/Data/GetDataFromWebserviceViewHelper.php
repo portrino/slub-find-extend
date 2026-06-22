@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
-
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -16,9 +12,8 @@ class GetDataFromWebserviceViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('url', 'string', 'The URL to query', false, null);
@@ -40,15 +35,15 @@ class GetDataFromWebserviceViewHelper extends AbstractViewHelper
             $ch = curl_init($arguments['url']);
 
             if ($arguments['type'] === 'POST') {
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 
                 curl_setopt(
                     $ch,
                     CURLOPT_HTTPHEADER,
-                    array(
+                    [
                         'Content-Type: application/json',
-                        'Content-Length: ' . strlen($data))
+                        'Content-Length: ' . strlen($data)]
                 );
             }
 

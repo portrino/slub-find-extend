@@ -9,9 +9,8 @@ class ArrayPluckViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'The array to pluck values from', true);
@@ -35,7 +34,7 @@ class ArrayPluckViewHelper extends AbstractViewHelper
         $pluck = $arguments['pluck'];
         $flattenArray = $arguments['flattenArray'];
 
-        if($flattenArray) {
+        if ($flattenArray) {
             $array = array_keys($array);
         }
 

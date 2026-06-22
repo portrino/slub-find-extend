@@ -25,8 +25,8 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
-class GroupDocumentsViewHelper extends AbstractViewHelper {
-
+class GroupDocumentsViewHelper extends AbstractViewHelper
+{
     /**
      * As this ViewHelper renders HTML, the output must not be escaped.
      *
@@ -37,7 +37,8 @@ class GroupDocumentsViewHelper extends AbstractViewHelper {
     /**
      * Registers arguments.
      */
-    public function initializeArguments() {
+    public function initializeArguments(): void
+    {
         parent::initializeArguments();
         $this->registerArgument('documents', 'array', '', true);
         $this->registerArgument('groupby', 'string', 'field to group documents by', true);
@@ -45,10 +46,10 @@ class GroupDocumentsViewHelper extends AbstractViewHelper {
     }
 
     /**
-     *
      * @return array
      */
-    public function render() {
+    public function render()
+    {
         $documents = $this->arguments['documents'];
         $groupby = $this->arguments['groupby'];
         $sortby = $this->arguments['sortby'];
@@ -84,7 +85,8 @@ class GroupDocumentsViewHelper extends AbstractViewHelper {
         return $this->renderChildren();
     }
 
-    private function sortArrays($key) {
+    private function sortArrays($key)
+    {
         return function ($a, $b) use ($key) {
             if ($a[$key] == $b[$key]) {
                 return 0;
@@ -93,5 +95,3 @@ class GroupDocumentsViewHelper extends AbstractViewHelper {
         };
     }
 }
-
-?>

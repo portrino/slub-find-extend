@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Removes line breaks inside content
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -21,9 +20,8 @@ class RemoveLineBreaksViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string', false, null);
@@ -43,9 +41,8 @@ class RemoveLineBreaksViewHelper extends AbstractViewHelper
         }
 
         if ($content && (strlen($content) > 0)) {
-            return str_replace(array("\r\n", "\n", "\r"), ' ', $content);
-        } else {
-            return '';
+            return str_replace(["\r\n", "\n", "\r"], ' ', $content);
         }
+        return '';
     }
 }

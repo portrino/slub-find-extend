@@ -28,7 +28,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * urldecodes content
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -45,9 +44,8 @@ class UrldecodeViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string to decode', false, null);

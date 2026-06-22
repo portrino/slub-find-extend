@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use File_MARC_Reference;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
@@ -19,9 +15,8 @@ class GetMarcDataViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('record', 'mixed', 'The decoded MARC record', false, null);
@@ -39,12 +34,12 @@ class GetMarcDataViewHelper extends AbstractViewHelper
     ) {
         if ($arguments['record']) {
             $reference = new File_MARC_Reference((string)$arguments['path'], $arguments['record']);
+            $content = $reference->content;
 
-            if ($arguments['index'] !== null && is_array($reference->content)) {
-                return $reference->content[$arguments['index']];
-            } else {
-                return $reference->content;
+            if ($arguments['index'] !== null && is_array($content)) {
+                return $content[$arguments['index']];
             }
+            return $content;
         }
 
         return null;

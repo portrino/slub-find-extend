@@ -6,24 +6,20 @@ namespace Slub\SlubFindExtend\ViewHelpers\Find;
  * Class QrCodeViewHelper
  *
  * This class generates a QR code from a given URL.
- *
- * @package Slub\SlubFindExtend\ViewHelpers\Find
  */
 
-
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
 
 class QrCodeViewHelper extends AbstractViewHelper
 {
-
     /**
      * Registers own arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('url', 'string', 'URL to enocode to qr code', true);
@@ -37,7 +33,6 @@ class QrCodeViewHelper extends AbstractViewHelper
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
-
         $renderer = new \BaconQrCode\Renderer\Image\Svg();
         $renderer->setHeight(256);
         $renderer->setWidth(256);
@@ -45,17 +40,15 @@ class QrCodeViewHelper extends AbstractViewHelper
 
         $imageDirWebroot = 'typo3temp/slub_find_extend/qr/';
         $imageDirAbs = GeneralUtility::getFileAbsFileName($imageDirWebroot);
-        $imageName = MD5($arguments['url']).'.svg';
+        $imageName = md5($arguments['url']) . '.svg';
 
-        if(!is_dir($imageDirAbs)) {
+        if (!is_dir($imageDirAbs)) {
             GeneralUtility::mkdir_deep($imageDirAbs);
         }
 
-        $writer->writeFile($arguments['url'], $imageDirAbs.$imageName);
-        GeneralUtility::fixPermissions($imageDirAbs.$imageName);
+        $writer->writeFile($arguments['url'], $imageDirAbs . $imageName);
+        GeneralUtility::fixPermissions($imageDirAbs . $imageName);
 
-        return '/'.$imageDirWebroot.$imageName;
+        return '/' . $imageDirWebroot . $imageName;
     }
-
-
 }

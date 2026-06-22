@@ -14,14 +14,14 @@ namespace Slub\SlubFindExtend\Slots;
  *
  * The TYPO3 project - inspiring people to share!
  */
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use Solarium\QueryType\Select\Result\Document;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 
 /**
  * Slot implementation before the
  *
  * @category    Slots
- * @package     TYPO3
  */
 class ModifySolrResult
 {
@@ -34,18 +34,14 @@ class ModifySolrResult
     protected $settings;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
+     * @var ConfigurationManagerInterface
      */
     protected $configurationManager;
 
-    /**
-     * @param \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager
-     * @return void
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    public function __construct(?ConfigurationManagerInterface $configurationManager = null)
     {
-        $this->configurationManager = $configurationManager;
-        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS);
+        $this->configurationManager = $configurationManager ?? GeneralUtility::makeInstance(ConfigurationManagerInterface::class);
+        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'Find', 'Find');
     }
 
     /**
@@ -53,7 +49,7 @@ class ModifySolrResult
      *
      * @param array &$assignments
      */
-    public function decode(&$assignments)
+    public function decode(&$assignments): void
     {
         $document = $assignments['document'];
         /* @var $document Document */
@@ -96,7 +92,7 @@ class ModifySolrResult
      *
      * @param array &$assignments
      */
-    public function blacklist(&$assignments)
+    public function blacklist(&$assignments): void
     {
         $document = $assignments['document'];
 

@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Removes \t and \n from string
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -21,9 +20,8 @@ class MinifyViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string', false, null);
@@ -43,6 +41,6 @@ class MinifyViewHelper extends AbstractViewHelper
             $content = $renderChildrenClosure();
         }
 
-        return str_replace(array("\n", "\t"), '', $content);
+        return str_replace(["\n", "\t"], '', $content);
     }
 }

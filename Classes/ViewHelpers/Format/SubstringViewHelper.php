@@ -30,8 +30,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
  * Gets a substring from a string or string-compatible value
  *
  * @author Claus Due <claus@wildside.dk>, Wildside A/S
- * @package Vhs
- * @subpackage ViewHelpers\Format
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -41,9 +39,8 @@ class SubstringViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string to substring', false, null);

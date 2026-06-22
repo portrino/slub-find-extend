@@ -1,4 +1,5 @@
 <?php
+
 namespace Slub\SlubFindExtend\Tests\Unit\Fixtures;
 
 class LoadableClass

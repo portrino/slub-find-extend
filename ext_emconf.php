@@ -10,25 +10,21 @@
  * "version" and "dependencies" must not be touched!
  ***************************************************************/
 
-$EM_CONF[$_EXTKEY] = array(
+$EM_CONF[$_EXTKEY] = [
     'title' => 'Find configuration for SLUB Catalog',
     'description' => '',
     'category' => 'plugin',
     'author' => 'Christof Rodejohann',
     'author_email' => 'typo3@slub-dresden.de',
     'state' => 'stable',
-    'internal' => '',
-    'uploadfolder' => '0',
-    'createDirs' => '',
-    'clearCacheOnLoad' => 0,
     'version' => '2.0.1',
-    'constraints' => array(
-        'depends' => array(
-            'typo3' => '11.5.0-11.5.99'
-        ),
-        'conflicts' => array(
-        ),
-        'suggests' => array(
-        ),
-    ),
-);
+    'constraints' => [
+        'depends' => [
+            'typo3' => '12.4.0-12.4.99',
+        ],
+        'conflicts' => [
+        ],
+        'suggests' => [
+        ],
+    ],
+];

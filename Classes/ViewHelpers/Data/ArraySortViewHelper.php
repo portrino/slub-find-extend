@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
-
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -13,9 +9,8 @@ class ArraySortViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'The data to access', true, null);
@@ -42,11 +37,11 @@ class ArraySortViewHelper extends AbstractViewHelper
         }
 
         // Parses sort type constant name to corresponding int value, eg. SORT_NATURAL => 6
-        if(is_string($arguments['flag'])) {
+        if (is_string($arguments['flag'])) {
             $arguments['flag'] = constant($arguments['flag']);
         }
 
-        if($arguments['type'] == 'value') {
+        if ($arguments['type'] == 'value') {
             sort($array, $arguments['flag']);
         } else {
             ksort($array, $arguments['flag']);

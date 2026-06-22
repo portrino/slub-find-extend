@@ -21,7 +21,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * @category VuFind2
- * @package  Search
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   David Maus <maus@hab.de>
  * @author   Demian Katz <demian.katz@villanova.edu>
@@ -38,7 +37,6 @@ namespace Slub\SlubFindExtend\Backend\Solr;
  * query to a SOLR query string.
  *
  * @category VuFind2
- * @package  Search
  * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
  * @author   David Maus <maus@hab.de>
  * @author   Demian Katz <demian.katz@villanova.edu>
@@ -54,7 +52,7 @@ class SearchHandler
      */
     protected static $configKeys = [
         'CustomMunge', 'DismaxFields', 'DismaxHandler', 'QueryFields',
-        'DismaxParams', 'FilterQuery'
+        'DismaxParams', 'FilterQuery',
     ];
 
     /**
@@ -77,8 +75,6 @@ class SearchHandler
      * @param array  $spec                 Search handler specification
      * @param string $defaultDismaxHandler Default dismax handler (if no
      * DismaxHandler set in specs).
-     *
-     * @return void
      */
     public function __construct(array $spec, $defaultDismaxHandler = 'dismax')
     {
@@ -162,9 +158,8 @@ class SearchHandler
                 $search,
                 implode(' OR ', $boostQuery)
             );
-        } else {
-            return $search;
         }
+        return $search;
     }
 
     /**
@@ -194,7 +189,7 @@ class SearchHandler
      */
     public function hasExtendedDismax()
     {
-        return $this->hasDismax() && ('edismax' == $this->getDismaxHandler());
+        return $this->hasDismax() && ($this->getDismaxHandler() == 'edismax');
     }
 
     /**
@@ -348,7 +343,8 @@ class SearchHandler
                         break;
                     default:
                         throw new \InvalidArgumentException(
-                            sprintf('Unknown munge operation: %s', $operation[0])
+                            sprintf('Unknown munge operation: %s', $operation[0]),
+                            4974769216
                         );
                 }
             }
@@ -447,7 +443,6 @@ class SearchHandler
                 // Otherwise, we've got a (list of) [munge, weight] pairs to deal
                 // with
                 foreach ($clausearray['operators'] as $spec_name => $spec_value) {
-
                     // build a string like title:("one two")
                     $sstring = $field . ':(' . $mungeValues[$spec_name] . ')';
                     // Add the weight if we have one. Yes, I know, it's redundant

@@ -31,8 +31,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
  * of individual chars to strip off, default is all whitespaces).
  *
  * @author Claus Due <claus@wildside.dk>, Wildside A/S
- * @package Vhs
- * @subpackage ViewHelpers\Format
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -49,9 +47,8 @@ class TrimViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string to trim', false, null);

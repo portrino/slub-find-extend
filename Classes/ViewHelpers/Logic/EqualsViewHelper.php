@@ -18,16 +18,13 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
  * string $haystack contains provided string $needle.
  *
  * @author Björn Fromme <fromme@dreipunktnull.com>, dreipunktnull
- * @package Vhs
- * @subpackage ViewHelpers\Condition\String
  */
 class EqualsViewHelper extends AbstractConditionViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('string', 'string', 'The string to check against', true);
@@ -40,13 +37,12 @@ class EqualsViewHelper extends AbstractConditionViewHelper
      */
     protected static function evaluateCondition($arguments = null)
     {
-        $string = (string) $arguments['string'];
-        $test = (string) $arguments['test'];
+        $string = (string)$arguments['string'];
+        $test = (string)$arguments['test'];
 
         if (false !== ($string === $test)) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }

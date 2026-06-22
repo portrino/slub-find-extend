@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Removes any text inside a parentheses including the parentheses
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -21,9 +20,8 @@ class RemoveParenthesesTextViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content string', false);
@@ -44,6 +42,6 @@ class RemoveParenthesesTextViewHelper extends AbstractViewHelper
             $content = $renderChildrenClosure();
         }
 
-        return preg_replace("/\([^)]+\)/", "", $content, $arguments['limit']);
+        return preg_replace("/\([^)]+\)/", '', $content, $arguments['limit']);
     }
 }

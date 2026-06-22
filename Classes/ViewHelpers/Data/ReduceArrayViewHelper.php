@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -13,9 +9,8 @@ class ReduceArrayViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'array to reduce', false);
@@ -51,8 +46,7 @@ class ReduceArrayViewHelper extends AbstractViewHelper
             return [];
         }
 
-        if (is_array($array) || is_object($array))
-        {
+        if (is_array($array) || is_object($array)) {
             foreach ($array as $part) {
                 $newPart = [];
 

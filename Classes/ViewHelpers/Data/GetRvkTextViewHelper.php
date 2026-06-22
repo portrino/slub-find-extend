@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -16,9 +12,8 @@ class GetRvkTextViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('rvk', 'string', 'The rvk value to resolve', false, null);
@@ -38,12 +33,12 @@ class GetRvkTextViewHelper extends AbstractViewHelper
             $rvk = $renderChildrenClosure();
         }
 
-        $url = 'http://sdvkatalogrvk.slub-dresden.de/api/?rvk='.urlencode(trim($rvk));
+        $url = 'http://sdvkatalogrvk.slub-dresden.de/api/?rvk=' . urlencode(trim($rvk));
 
         $rvkArray = json_decode(static::getData($url), true);
 
-        if (!empty($rvkArray["name"])) {
-            return trim($rvk) . ' : ' . $rvkArray["name"];
+        if (!empty($rvkArray['name'])) {
+            return trim($rvk) . ' : ' . $rvkArray['name'];
         }
 
         return $rvk;

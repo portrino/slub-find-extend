@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
-
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -22,6 +18,6 @@ class GetUsernameViewHelper extends AbstractViewHelper
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
-        return strval($GLOBALS['TSFE']->fe_user->user['username']);
+        return (string)($GLOBALS['TSFE']->fe_user->user['username']);
     }
 }

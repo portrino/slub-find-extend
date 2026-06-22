@@ -26,8 +26,8 @@ namespace Slub\SlubFindExtend\ViewHelpers\Find;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
-class ParseHighlightedFieldViewHelper extends AbstractViewHelper {
-
+class ParseHighlightedFieldViewHelper extends AbstractViewHelper
+{
     /**
      * As this ViewHelper renders HTML, the output must not be escaped.
      *
@@ -38,7 +38,8 @@ class ParseHighlightedFieldViewHelper extends AbstractViewHelper {
     /**
      * Registers arguments.
      */
-    public function initializeArguments() {
+    public function initializeArguments(): void
+    {
         parent::initializeArguments();
         $this->registerArgument('data', 'string', 'field with highlighting to get parsed', true);
         $this->registerArgument('highlightTagOpen', 'string', 'opening tag to insert to begin highlighting', false, '<em class="highlight">');
@@ -46,10 +47,8 @@ class ParseHighlightedFieldViewHelper extends AbstractViewHelper {
     }
 
     /**
-     *
      * @return string
      */
-
     public static function renderStatic(
         array $arguments,
         \Closure $renderChildrenClosure,
@@ -57,17 +56,15 @@ class ParseHighlightedFieldViewHelper extends AbstractViewHelper {
     ) {
         if (empty($arguments['data'])) {
             return '';
-        } else {
-            return self::highlightData($arguments['data'], $arguments);
         }
+        return self::highlightData($arguments['data'], $arguments);
     }
 
-    protected static function highlightData($data, $arguments) {
+    protected static function highlightData($data, $arguments)
+    {
         $result = '';
-        $result = str_replace(['\ueeee', '\ueeef'],[$arguments['highlightTagOpen'], $arguments['highlightTagClose']], $data);
+        $result = str_replace(['\ueeee', '\ueeef'], [$arguments['highlightTagOpen'], $arguments['highlightTagClose']], $data);
 
         return $result;
     }
 }
-
-?>

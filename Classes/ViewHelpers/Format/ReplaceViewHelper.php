@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Format;
 
 /**
  * Replaces chars inside content
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -21,9 +20,8 @@ class ReplaceViewHelper extends AbstractViewHelper
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('content', 'string', 'Content', false, null);
@@ -49,14 +47,11 @@ class ReplaceViewHelper extends AbstractViewHelper
         }
 
         if (!empty($content) && !empty($needle)) {
-            if($arguments['regexp']) {
+            if ($arguments['regexp']) {
                 return preg_replace($needle, $replace, $content);
-            } else {
-                return str_replace($needle, $replace, $content);
             }
-            
-        } else {
-            return '';
+            return str_replace($needle, $replace, $content);
         }
+        return '';
     }
 }

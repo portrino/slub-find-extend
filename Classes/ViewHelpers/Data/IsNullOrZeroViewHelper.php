@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * IsNullOrZeroViewHelpe
  *
  * Checks if a value is null or the value 0.
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -16,16 +15,15 @@ class IsNullOrZeroViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('value', 'mixed', 'The value to check', true, null);
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public static function renderStatic(
         array $arguments,

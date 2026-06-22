@@ -29,14 +29,13 @@ use Solarium\Core\Client\Adapter\Http;
 use Solarium\QueryType\Select\Result\Result;
 use Solarium\QueryType\Update\Query\Document\DocumentInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
  * FromSolrViewHelper
  *
  * Gets a field value from a Solr record
- *
  */
 class FromSolrViewHelper extends AbstractViewHelper
 {
@@ -50,13 +49,12 @@ class FromSolrViewHelper extends AbstractViewHelper
     /**
      * @var \Solarium\Client
      */
-    protected static $solr = null;
+    protected static $solr;
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('query', 'mixed', 'Solr querystring or array of query fields and their query values.', true);
@@ -73,11 +71,10 @@ class FromSolrViewHelper extends AbstractViewHelper
      * @return string
      */
     public static function renderStatic(
-        array                     $arguments,
-        \Closure                  $renderChildrenClosure,
+        array $arguments,
+        \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
-    )
-    {
+    ) {
         $templateVariableContainer = $renderingContext->getVariableProvider();
 
         $solrClient = static::getSolariumClient($templateVariableContainer);
@@ -141,7 +138,7 @@ class FromSolrViewHelper extends AbstractViewHelper
             if ($templateVariableContainer->exists('documents')) {
                 $templateVariableContainer->remove('documents');
             }
-            $templateVariableContainer->add('documents', NULL);
+            $templateVariableContainer->add('documents', null);
         }
 
         return $renderChildrenClosure();
@@ -151,9 +148,8 @@ class FromSolrViewHelper extends AbstractViewHelper
      * Check configuration for shards and when found create Distributed Search
      * @param Query $query
      */
-    private static function createQueryComponents(&$query, &$templateVariableContainer)
+    private static function createQueryComponents(&$query, &$templateVariableContainer): void
     {
-
         // Shards
         if (is_array($templateVariableContainer->get('settings')['shards']) && count($templateVariableContainer->get('settings')['shards'])) {
             $distributedSearch = $query->getDistributedSearch();
@@ -168,7 +164,7 @@ class FromSolrViewHelper extends AbstractViewHelper
      *
      * @param Query $query
      */
-    private static function addTypoScriptFilters(&$query, &$templateVariableContainer)
+    private static function addTypoScriptFilters(&$query, &$templateVariableContainer): void
     {
         if (!empty($templateVariableContainer->get('settings')['additionalFilters'])) {
             foreach ($templateVariableContainer->get('settings')['additionalFilters'] as $key => $filterQuery) {
@@ -203,7 +199,7 @@ class FromSolrViewHelper extends AbstractViewHelper
      */
     private static function getSolariumClient()
     {
-        if (null === static::$solr) {
+        if (static::$solr === null) {
             // create an HTTP adapter instance
             $adapter = new Curl();
             $eventDispatcher = new EventDispatcher();
@@ -219,19 +215,19 @@ class FromSolrViewHelper extends AbstractViewHelper
         $settings = $templateVariableContainer->get('settings');
         $connection = $settings['connections'][$settings['activeConnection']]['options'];
 
-        $configuration = array(
-            'endpoint' => array(
-                $settings['activeConnection'] => array(
+        $configuration = [
+            'endpoint' => [
+                $settings['activeConnection'] => [
                     'host' => $connection['host'],
-                    'port' => intval($connection['port']),
+                    'port' => (int)($connection['port']),
                     'path' => $connection['path'],
                     'timeout' => $connection['timeout'],
                     'scheme' => $connection['scheme'],
-                    'core' => $connection['core']
-                )
-            ),
-            'solarium' => $query
-        );
+                    'core' => $connection['core'],
+                ],
+            ],
+            'solarium' => $query,
+        ];
 
         return $configuration;
     }

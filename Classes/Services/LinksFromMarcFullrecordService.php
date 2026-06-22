@@ -2,12 +2,8 @@
 
 namespace Slub\SlubFindExtend\Services;
 
-use Solarium\QueryType\Select\Result\Document;
-use Slub\SlubFindExtend\Services\MarcRefrenceResolverService;
-
 /**
  * Class StatusService
- * @package Slub\SlubFindExtend\Services
  */
 class LinksFromMarcFullrecordService
 {
@@ -16,7 +12,8 @@ class LinksFromMarcFullrecordService
      */
     protected $marcRefrenceResolverService;
 
-    public function injectMarcRefrenceResolverService(MarcRefrenceResolverService $marcRefrenceResolverService) {
+    public function __construct(\Slub\SlubFindExtend\Services\MarcRefrenceResolverService $marcRefrenceResolverService)
+    {
         $this->marcRefrenceResolverService = $marcRefrenceResolverService;
     }
 
@@ -25,14 +22,14 @@ class LinksFromMarcFullrecordService
      *
      * @param object $fullrecord
      * @param array $isil
-     * @param boolean $unique
-     * @param boolean $merged
+     * @param bool $unique
+     * @param bool $merged
      * @return array
      */
     public function getLinks($fullrecord, $isil = null, $unique = false, $merged = false)
     {
         $defaultPrefix = 'https://wwwdb.dbod.de/login?url=';
-        $noPrefixHosts = ['wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de', 'mediathek.slub-dresden.de', 'ezb.ur.de', 'dbis.uni-regensburg.de', 'www.bibliothek.uni-regensburg.de',];
+        $noPrefixHosts = ['wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de', 'mediathek.slub-dresden.de', 'ezb.ur.de', 'dbis.uni-regensburg.de', 'www.bibliothek.uni-regensburg.de'];
         $blacklistLabel = ['Kostenfrei', 'Volltext'];
 
         $resourceLinks = [];
@@ -42,17 +39,17 @@ class LinksFromMarcFullrecordService
 
         $reference = $this->marcRefrenceResolverService->resolveReference('856', $fullrecord);
 
-        for ($i = 0; $i < count($reference->cache["856"]); $i++) {
+        for ($i = 0; $i < count($reference->cache['856']); $i++) {
             $prefix = $defaultPrefix;
             $note = '';
             $material = '';
-            $ind1 = $reference->cache["856[" . $i . "]"]->getIndicator(1);
-            $ind2 = $reference->cache["856[" . $i . "]"]->getIndicator(2);
+            $ind1 = $reference->cache['856[' . $i . ']']->getIndicator(1);
+            $ind2 = $reference->cache['856[' . $i . ']']->getIndicator(2);
 
-            if ($reference->cache["856[" . $i . "]"]->getSubfield('u')) {
-                $uri = trim($reference->cache["856[" . $i . "]"]->getSubfield('u')->getData());
+            if ($reference->cache['856[' . $i . ']']->getSubfield('u')) {
+                $uri = trim($reference->cache['856[' . $i . ']']->getSubfield('u')->getData());
 
-                if (substr($uri, 0, 4) === "urn:") {
+                if (substr($uri, 0, 4) === 'urn:') {
                     $uri = 'http://nbn-resolving.de/' . $uri;
                 }
                 $uri = str_replace('https://wwwdb.dbod.de/login?url=', '', $uri);
@@ -63,22 +60,22 @@ class LinksFromMarcFullrecordService
                     $prefix =  '';
                 }
 
-                if ($reference->cache["856[" . $i . "]"]->getSubfield('z')) {
-                    $note = $reference->cache["856[" . $i . "]"]->getSubfield('z')->getData();
+                if ($reference->cache['856[' . $i . ']']->getSubfield('z')) {
+                    $note = $reference->cache['856[' . $i . ']']->getSubfield('z')->getData();
                     if (in_array($note, $blacklistLabel)) {
                         $note = '';
                     }
                 }
-                if ($reference->cache["856[" . $i . "]"]->getSubfield('3')) {
-                    $material = $reference->cache["856[" . $i . "]"]->getSubfield('3')->getData();
+                if ($reference->cache['856[' . $i . ']']->getSubfield('3')) {
+                    $material = $reference->cache['856[' . $i . ']']->getSubfield('3')->getData();
                     $material = str_replace('#', ' - ', $material);
                     if (in_array($material, $blacklistLabel)) {
                         $material = '';
                     }
                 }
 
-                if ($reference->cache["856[" . $i . "]"]->getSubfield('9') && in_array($reference->cache["856[" . $i . "]"]->getSubfield('9')->getData(), $isil)) {
-                    if ($reference->cache["856[" . $i . "]"]->getSubfield('9')->getData() === 'LFER') {
+                if ($reference->cache['856[' . $i . ']']->getSubfield('9') && in_array($reference->cache['856[' . $i . ']']->getSubfield('9')->getData(), $isil)) {
+                    if ($reference->cache['856[' . $i . ']']->getSubfield('9')->getData() === 'LFER') {
                         $prefix =  '';
                     }
 
@@ -88,7 +85,7 @@ class LinksFromMarcFullrecordService
                     }
 
                     if ($linkNotInArray) {
-                        $isilLinks[] = ["uri" => $uri, "note" => $note, "material" => $material, "prefix" => $prefix];
+                        $isilLinks[] = ['uri' => $uri, 'note' => $note, 'material' => $material, 'prefix' => $prefix];
                     }
                 } elseif (($ind1 === '4') && ($ind2 === '2')) {
                     $linkNotInArray = true;
@@ -97,7 +94,7 @@ class LinksFromMarcFullrecordService
                     }
 
                     if ($linkNotInArray) {
-                        $relatedLinks[] = ["uri" => $uri, "note" => $note, "material" => $material, "prefix" => ''];
+                        $relatedLinks[] = ['uri' => $uri, 'note' => $note, 'material' => $material, 'prefix' => ''];
                     }
                 } elseif (($ind1 === '4') && ($ind2 === '0')) {
                     $linkNotInArray = true;
@@ -106,7 +103,7 @@ class LinksFromMarcFullrecordService
                     }
 
                     if ($linkNotInArray) {
-                        $resourceLinks[] = ["uri" => $uri, "note" => $note, "material" => $material, "prefix" => $prefix];
+                        $resourceLinks[] = ['uri' => $uri, 'note' => $note, 'material' => $material, 'prefix' => $prefix];
                     }
                 } else {
                     $linkNotInArray = true;
@@ -115,25 +112,24 @@ class LinksFromMarcFullrecordService
                     }
 
                     if ($linkNotInArray) {
-                        $unspecificLinks[] = ["uri" => $uri, "note" => $note, "material" => $material, "prefix" => $prefix];
+                        $unspecificLinks[] = ['uri' => $uri, 'note' => $note, 'material' => $material, 'prefix' => $prefix];
                     }
                 }
             }
         }
 
-        if ((sizeof($isilLinks) == 0) && (sizeof($relatedLinks) == 0) && (sizeof($relatedLinks) == 0) && (sizeof($unspecificLinks) > 0)) {
+        if ((count($isilLinks) == 0) && (count($relatedLinks) == 0) && (count($relatedLinks) == 0) && (count($unspecificLinks) > 0)) {
             $resourceLinks = $unspecificLinks;
         }
 
         if ($merged) {
             return array_merge($isilLinks, $resourceLinks, $relatedLinks);
-        } else {
-            return [
-                'isil' => $isilLinks,
-                'resource' => $resourceLinks,
-                'related' => $relatedLinks,
-                'count' => sizeof($isilLinks) + sizeof($resourceLinks) + sizeof($relatedLinks)
-            ];
         }
+        return [
+            'isil' => $isilLinks,
+            'resource' => $resourceLinks,
+            'related' => $relatedLinks,
+            'count' => count($isilLinks) + count($resourceLinks) + count($relatedLinks),
+        ];
     }
 }

@@ -2,13 +2,7 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Find;
 
-/**
- *
- */
-
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Cache\CacheManager;
-use Slub\SlubFindExtend\Services\HoldingStatusService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class HoldingStatusJsonViewHelper extends AbstractViewHelper
@@ -25,14 +19,15 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
      */
     protected $holdingStatusService;
 
-    public function injectHoldingStatusService(HoldingStatusService $holdingStatusService) {
+    public function __construct(\Slub\SlubFindExtend\Services\HoldingStatusService $holdingStatusService)
+    {
         $this->holdingStatusService = $holdingStatusService;
     }
 
     /**
      * Registers own arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('data', 'mixed', 'The holding data', false, null);
@@ -41,7 +36,6 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
 
     /**
      * Tries to resolve Article against holdings
-     *
      */
     private function getElectronicHoldingFromData($data)
     {
@@ -67,20 +61,20 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
         $firstAuthorAulast = $firstAuthor['rft.aulast'];
         $firstAuthorAufirst = $firstAuthor['rft.aufirst'];
 
-        $url = 'http://www-s.redi-bw.de/links/?rl_site=slub&atitle='.urlencode($article).
-            '&issn='.urlencode($firstISSN).
-            '&volume='.urlencode($volume).
-            '&spage='.urlencode($spage).
-            '&epage='.urlencode($epage).
-            '&pages='.urlencode($pages).
-            '&issue='.urlencode($issue).
-            '&aulast='.urlencode($firstAuthorAulast).
-            '&aufirst='.urlencode($firstAuthorAufirst).
-            '&genre='.urlencode($genre).
-            '&sid=katalogbeta.slub-dresden.de&date='.urlencode($date).
-            '&language='.urlencode($language).
-            '&id='.urlencode($doi).
-            '&title='.urlencode($jtitle);
+        $url = 'http://www-s.redi-bw.de/links/?rl_site=slub&atitle=' . urlencode($article) .
+            '&issn=' . urlencode($firstISSN) .
+            '&volume=' . urlencode($volume) .
+            '&spage=' . urlencode($spage) .
+            '&epage=' . urlencode($epage) .
+            '&pages=' . urlencode($pages) .
+            '&issue=' . urlencode($issue) .
+            '&aulast=' . urlencode($firstAuthorAulast) .
+            '&aufirst=' . urlencode($firstAuthorAufirst) .
+            '&genre=' . urlencode($genre) .
+            '&sid=katalogbeta.slub-dresden.de&date=' . urlencode($date) .
+            '&language=' . urlencode($language) .
+            '&id=' . urlencode($doi) .
+            '&title=' . urlencode($jtitle);
 
         $doc = new \DOMDocument();
         $html = $this->getData($url);
@@ -109,7 +103,6 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
             $ezb_status = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class, 't_ezb_yellow') or contains(@class, 't_ezb_green') or contains(@class, 't_ezb_red')]/@class")->item($i)->nodeValue;
             $ezb_status_via = trim($xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p")->item($i)->nodeValue);
             $ezb_url = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href")->item($i)->nodeValue;
-
 
             $ezb_via = substr($ezb_status_via, strpos($ezb_status_via, 'via')+4, -4);
 
@@ -153,7 +146,6 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
 
     /**
      * Tries to resolve Article against holdings
-     *
      */
     private function getElectronicDatabaseFromData($data)
     {
@@ -163,14 +155,12 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
             if ((strpos($url, 'http://www.bibliothek.uni-regensburg.de/dbinfo/frontdoor.php') === 0) ||
                 (strpos($url, 'http://rzblx10.uni-regensburg.de/dbinfo/detail.php?titel_id') === 0)) {
                 $databaseUrl = $url;
-            };
+            }
         }
-
 
         if (!strlen($databaseUrl)) {
             return;
         }
-
 
         $doc = new \DOMDocument();
         libxml_use_internal_errors(true);
@@ -180,11 +170,10 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
 
         $dbis_url = $xpath->query("//td[@id ='detail_content_start']/a/@href")->item(0)->nodeValue;
 
-
         $status['infolink'] = $databaseUrl;
         $status['access'] = 1;
         $status['via'] = '';
-        $status['url'] = 'http://rzblx10.uni-regensburg.de/dbinfo/'.$dbis_url;
+        $status['url'] = 'http://rzblx10.uni-regensburg.de/dbinfo/' . $dbis_url;
         $status['status'] = 1;
 
         return $status;
@@ -200,18 +189,17 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
         if (in_array('Local', $data['documents'][0]['facet_avail'])) {
             if ($data['enriched']['fields']['exemplare']) {
                 $status = $this->holdingStatusService->getStatus($data['documents'][0], $data['enriched']['fields']['exemplare']);
-                return json_encode(array('status' => $status));
-            } else {
-                // Somehow this is a Local Holdings file with no copies. Send "Action needed" state.
-                return json_encode(array('status' => 0));
+                return json_encode(['status' => $status]);
             }
-        } elseif ((in_array('Online', $data['documents'][0]['facet_avail'])) || ($data['documents'][0]['physical'] && in_array('Online-Ressource', $data['documents'][0]['physical']))) {
+            // Somehow this is a Local Holdings file with no copies. Send "Action needed" state.
+            return json_encode(['status' => 0]);
+        }
+        if ((in_array('Online', $data['documents'][0]['facet_avail'])) || ($data['documents'][0]['physical'] && in_array('Online-Ressource', $data['documents'][0]['physical']))) {
             if (!$this->arguments['index']) {
                 $cache = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('resolv_link_electronic');
                 $cacheIdentifier = sha1($data['documents'][0]['id']);
                 $entry = $cache->get($cacheIdentifier);
                 if (!$entry) {
-
                     // Try to resolve article against holdings
                     $entry = $this->getElectronicHoldingFromData($data);
 
@@ -228,22 +216,21 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
                             'access' => 1,
                             'via' => 1,
                             'url' => $data['documents'][0]['url'][0],
-                            'status' => 1
+                            'status' => 1,
                         ];
                     }
 
                     $cache->set($cacheIdentifier, $entry);
                 }
             } else {
-                return json_encode(array('status' => 1));
+                return json_encode(['status' => 1]);
             }
 
-            $entry['url'] = '//wwwdb.dbod.de/login?url='.$entry['url'];
+            $entry['url'] = '//wwwdb.dbod.de/login?url=' . $entry['url'];
 
             return json_encode($entry);
-        } else {
-            return json_encode(array('status' => 0));
         }
+        return json_encode(['status' => 0]);
     }
 
     private function getData($url)

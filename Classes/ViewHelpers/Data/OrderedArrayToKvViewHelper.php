@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -13,9 +9,8 @@ class OrderedArrayToKvViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'Array with keys and values', false, null);
@@ -49,14 +44,13 @@ class OrderedArrayToKvViewHelper extends AbstractViewHelper
             return [];
         }
 
-        if (is_array($array) || is_object($array))
-        {
+        if (is_array($array) || is_object($array)) {
             foreach ($array as $key => $value) {
                 $innerresult = [];
                 $innerkey = '';
                 $isKey = true;
 
-                $keyValue = ($translate) ? \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($translatekey.$key, $translatekeyextension) : $key;
+                $keyValue = ($translate) ? \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($translatekey . $key, $translatekeyextension) : $key;
                 if (strlen($keyValue) === 0) {
                     $keyValue = $key;
                 }
@@ -66,7 +60,7 @@ class OrderedArrayToKvViewHelper extends AbstractViewHelper
                         $innerkey = $innervalue;
                         $isKey = false;
                     } elseif ($isKey === false) {
-                        $innerkeyValue = ($translate) ? \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($translatekey.$key.'.'.$innerkey, $translatekeyextension) : $innerkey;
+                        $innerkeyValue = ($translate) ? \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($translatekey . $key . '.' . $innerkey, $translatekeyextension) : $innerkey;
                         if (strlen($innerkeyValue) === 0) {
                             $innerkeyValue = $innerkey;
                         }

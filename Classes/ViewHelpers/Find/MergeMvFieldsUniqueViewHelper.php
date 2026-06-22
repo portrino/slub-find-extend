@@ -2,17 +2,15 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Find;
 
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class MergeMvFieldsUniqueViewHelper extends AbstractViewHelper
 {
-
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('document', 'array', 'The document object', true);
@@ -36,6 +34,5 @@ class MergeMvFieldsUniqueViewHelper extends AbstractViewHelper
         }
 
         return array_unique($allUrls);
-
     }
 }

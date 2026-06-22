@@ -2,12 +2,11 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Link;
 
-use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
+use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class GetPrefixedLinkViewHelper extends AbstractViewHelper
 {
-
     /**
      * The prefix string
      * @var string
@@ -18,13 +17,12 @@ class GetPrefixedLinkViewHelper extends AbstractViewHelper
      * Hosts that should not be prefixed
      * @var array
      */
-    const NO_PREFIX_HOSTS = ['dbis.uni-regensburg.de', 'www.bibliothek.uni-regensburg.de','ezb.ur.de', 'wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de', 'mediathek.slub-dresden.de'];
+    const NO_PREFIX_HOSTS = ['dbis.uni-regensburg.de', 'www.bibliothek.uni-regensburg.de', 'ezb.ur.de', 'wwwdb.dbod.de', 'www.dbod.de', 'nbn-resolving.de', 'digital.slub-dresden.de', 'digital.zlb.de', 'www.deutschefotothek.de', 'mediathek.slub-dresden.de'];
 
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('link', 'string|array', 'The link to check', true);
@@ -32,7 +30,7 @@ class GetPrefixedLinkViewHelper extends AbstractViewHelper
 
     /**
      * Render the link with prefix
-     * 
+     *
      * @return array
      */
     public static function renderStatic(
@@ -42,9 +40,9 @@ class GetPrefixedLinkViewHelper extends AbstractViewHelper
     ) {
         $link = $arguments['link'];
 
-        if(!is_string($link)) {
+        if (!is_string($link)) {
             return $link;
-        }   
+        }
 
         $prefix = self::PREFIX;
         $note = '';
@@ -55,14 +53,14 @@ class GetPrefixedLinkViewHelper extends AbstractViewHelper
             $prefix =  '';
         }
 
-        if(str_ends_with($link, 'manifest.json')) {
+        if (str_ends_with($link, 'manifest.json')) {
             $note = 'IIIF-Manifest';
         }
 
-        return array(
-            "uri" => $link,
-            "prefix" => $prefix,
-            "note" => $note
-        );
+        return [
+            'uri' => $link,
+            'prefix' => $prefix,
+            'note' => $note,
+        ];
     }
 }

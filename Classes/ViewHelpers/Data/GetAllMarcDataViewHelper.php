@@ -32,12 +32,10 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
  */
 class GetAllMarcDataViewHelper extends AbstractViewHelper
 {
-
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('record', 'mixed', 'The decoded MARC record', false, null);
@@ -57,13 +55,12 @@ class GetAllMarcDataViewHelper extends AbstractViewHelper
             }
 
             foreach ($record->getFields() as $tag => $value) {
-                $line = "";
+                $line = '';
                 $line .= "$tag ";
 
                 if ($value instanceof \File_MARC_Control_Field) {
                     $line .= $value->getData();
                 } else {
-
                     // Iterate through the subfields in this data field
                     $line .= $value->getIndicator(1);
                     $line .= $value->getIndicator(2);

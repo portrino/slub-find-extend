@@ -3,6 +3,7 @@
 namespace Slub\SlubFindExtend\Slots;
 
 use Solarium\QueryType\Select\Result\Document;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 
@@ -10,7 +11,6 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
  * Slot implementation before the
  *
  * @category    Slots
- * @package     TYPO3
  */
 class HandleOneHit
 {
@@ -30,33 +30,26 @@ class HandleOneHit
     protected $uriBuilder;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
+     * @var ConfigurationManagerInterface
      */
     protected $configurationManager;
 
-    /**
-     * @param \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager
-     * @return void
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    public function __construct(?ConfigurationManagerInterface $configurationManager = null, ?UriBuilder $uriBuilder = null)
     {
-        $this->configurationManager = $configurationManager;
-        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS);
+        $this->configurationManager = $configurationManager ?? GeneralUtility::makeInstance(ConfigurationManagerInterface::class);
+        $this->uriBuilder = $uriBuilder ?? GeneralUtility::makeInstance(UriBuilder::class);
+        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'Find', 'Find');
     }
 
-    public function injectUriBuilder(UriBuilder $uriBuilder)
-    {
-        $this->uriBuilder = $uriBuilder;
-    }
     /**
      * Slot to handle one hit results
      *
      * @param array &$resultSet
      */
-    public function index(&$resultSet)
+    public function index(&$resultSet): void
     {
         $idhit = false;
-        if ($this->settings['handleOnHit'] == "0") {
+        if (isset($this->settings['handleOnHit']) && $this->settings['handleOnHit'] == '0') {
             return;
         }
 
@@ -66,7 +59,6 @@ class HandleOneHit
             && ((is_array($_GET['tx_find_find']['facet'])) && (count($_GET['tx_find_find']['facet']) === 0))
             && (!$_GET['type'] > 0)
         ) {
-
             /* @var $document Document */
             $document = $resultSet->getDocuments()[0];
             foreach ($resultSet->getHighlighting()->getResult($document['id'])->getFields() as $key => $value) {
@@ -76,9 +68,9 @@ class HandleOneHit
             }
 
             if ($idhit) {
-                $uri = $this->uriBuilder->uriFor("detail", ['id' => $document['id'], 'underlyingQuery' => ['q' => $_GET['tx_find_find']['q'], 'position' => 1]], "Search", "find", "Find");
+                $uri = $this->uriBuilder->uriFor('detail', ['id' => $document['id'], 'underlyingQuery' => ['q' => $_GET['tx_find_find']['q'], 'position' => 1]], 'Search', 'find', 'Find');
 
-                header("Location: " . $uri, true, 302);
+                header('Location: ' . $uri, true, 302);
                 die();
             }
         }

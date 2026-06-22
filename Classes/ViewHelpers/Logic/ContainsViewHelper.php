@@ -10,7 +10,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Logic;
  */
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
-use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 
 /**
  * ### Condition: String contains substring
@@ -19,15 +18,13 @@ use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
  * string $haystack contains provided string $needle.
  *
  * @author Björn Fromme <fromme@dreipunktnull.com>, dreipunktnull
- * @package Vhs
- * @subpackage ViewHelpers\Condition\String
  */
 class ContainsViewHelper extends AbstractConditionViewHelper
 {
     /**
      * Registers own arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('haystacks', 'string|array', 'Haystack to search', true);
@@ -46,7 +43,7 @@ class ContainsViewHelper extends AbstractConditionViewHelper
         }
 
         foreach ($haystacks as $haystack) {
-            if (false !== strpos($haystack, $needle)) {
+            if (strpos($haystack, $needle) !== false) {
                 if ($templateVariableContainer->exists('hit')) {
                     $templateVariableContainer->remove('hit');
                 }

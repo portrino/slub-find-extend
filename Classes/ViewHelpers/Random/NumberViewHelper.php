@@ -11,7 +11,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Random;
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
-use TYPO3\CMS\Fluid\Core\ViewHelper\Facets\CompilableInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\Traits\CompileWithRenderStatic;
 
 /**
@@ -26,14 +25,11 @@ class NumberViewHelper extends AbstractViewHelper
     use CompileWithRenderStatic;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $escapeOutput = false;
 
-    /**
-     * @return void
-     */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         $this->registerArgument(
             'minimum',
@@ -69,7 +65,7 @@ class NumberViewHelper extends AbstractViewHelper
      * @param array $arguments
      * @param \Closure $renderChildrenClosure
      * @param RenderingContextInterface $renderingContext
-     * @return integer|float
+     * @return int|float
      */
     public function render()
     {
@@ -78,7 +74,7 @@ class NumberViewHelper extends AbstractViewHelper
         $minimumDecimals = $this->arguments['minimumDecimals'];
         $maximumDecimals = $this->arguments['maximumDecimals'];
         $natural = random_int($minimum, $maximum);
-        if (0 === (int)$minimumDecimals && 0 === (int)$maximumDecimals) {
+        if ((int)$minimumDecimals === 0 && (int)$maximumDecimals === 0) {
             return $natural;
         }
         $decimals = array_fill(0, random_int($minimumDecimals, $maximumDecimals), 0);

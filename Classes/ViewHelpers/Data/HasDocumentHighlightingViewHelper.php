@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * HasDocumentHighlightingViewHelper
  *
  * Checks if this document has highlighting
- *
  */
 
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractConditionViewHelper;
@@ -15,17 +14,14 @@ class HasDocumentHighlightingViewHelper extends AbstractConditionViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('highlighting', 'array', 'Result array with highlighting per document', true);
         $this->registerArgument('id', 'string', 'document id to check', true);
     }
 
-    /**
-     */
     public static function verdict(array $arguments, \TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface $renderingContext)
     {
         $templateVariableContainer = $renderingContext->getVariableProvider();
@@ -36,7 +32,6 @@ class HasDocumentHighlightingViewHelper extends AbstractConditionViewHelper
         $resultIgnoreFields = explode(',', $templateVariableContainer->get('settings')['highlightingCheckFieldsIgnore']);
         $resultExclusiveFields = explode(',', $templateVariableContainer->get('settings')['highlightingCheckFieldsExclusive']);
         $exclusiveHit = false;
-
 
         if ($arguments['highlighting'] && $arguments['highlighting'][$arguments['id']]->getFields()) {
             foreach ($arguments['highlighting'][$arguments['id']]->getFields() as $key => $hit) {

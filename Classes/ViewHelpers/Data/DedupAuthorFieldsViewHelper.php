@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * DedupAuthorFieldsVideHelper
  *
  * Remove deduplicate author fields from document
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -17,7 +16,7 @@ class DedupAuthorFieldsViewHelper extends AbstractViewHelper
     /**
      * Register arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('document', 'mixed', 'The document to dedup authors within', false, null);

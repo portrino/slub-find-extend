@@ -2,10 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -13,13 +9,12 @@ class MergeArraysViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
-        $this->registerArgument('arrayOne', 'array', 'The first array.', true, array());
-        $this->registerArgument('arrayTwo', 'array', 'The second array', true, array());
+        $this->registerArgument('arrayOne', 'array', 'The first array.', true, []);
+        $this->registerArgument('arrayTwo', 'array', 'The second array', true, []);
     }
 
     /**
@@ -39,7 +34,8 @@ class MergeArraysViewHelper extends AbstractViewHelper
 
         if ($arrayOne === null) {
             return $arrayTwo;
-        } elseif ($arrayTwo === null) {
+        }
+        if ($arrayTwo === null) {
             return $arrayOne;
         }
 

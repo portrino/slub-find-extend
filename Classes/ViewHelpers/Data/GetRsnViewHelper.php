@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * FilterBlacklistedViewHelper
  *
  * Filters the values of an array against a blacklist.
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -19,9 +18,8 @@ class GetRsnViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('rsns', 'array', 'The RSNs to search', false, null);
@@ -38,7 +36,7 @@ class GetRsnViewHelper extends AbstractViewHelper
     ) {
         if ($arguments['rsns']) {
             foreach ($arguments['rsns'] as $rsn) {
-                if (preg_match('/^.*'.$arguments['isil'].'.?(.*?)$/', $rsn, $matches) === 1) {
+                if (preg_match('/^.*' . $arguments['isil'] . '.?(.*?)$/', $rsn, $matches) === 1) {
                     return $matches[1];
                 }
             }

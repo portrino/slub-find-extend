@@ -20,7 +20,7 @@ class MinLengthViewHelper extends AbstractConditionViewHelper
     /**
      * Register arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('string', 'string', 'The string to check against minlength', true, null);
@@ -30,7 +30,7 @@ class MinLengthViewHelper extends AbstractConditionViewHelper
     /**
      * evaluate method
      * @param array $arguments
-     * @return boolean
+     * @return bool
      */
     protected static function evaluateCondition($arguments = null)
     {
@@ -43,8 +43,7 @@ class MinLengthViewHelper extends AbstractConditionViewHelper
 
         if (false !== (strlen($string) >= $length)) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }

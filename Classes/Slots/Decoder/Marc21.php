@@ -20,14 +20,11 @@ use File_MARC_Record;
 
 require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
 
-
 /**
  * Slot implementation before the
  *
  * @category    Decoder
- * @package     TYPO3
  */
-
 class Marc21
 {
     /**

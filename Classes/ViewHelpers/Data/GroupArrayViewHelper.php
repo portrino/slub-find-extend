@@ -2,22 +2,17 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
-/**
- *
- */
-
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class GroupArrayViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
-        $this->registerArgument('array', 'array', 'The first array.', true, array());
+        $this->registerArgument('array', 'array', 'The first array.', true, []);
         $this->registerArgument('groupby', 'string', 'One or more Array elements to create a group by', true, '');
     }
 
@@ -32,7 +27,6 @@ class GroupArrayViewHelper extends AbstractViewHelper
         $groupedArray = [];
 
         foreach ($array as $elementObj) {
-
             // Ensure arary. Might be object
             $element = (array)$elementObj;
 

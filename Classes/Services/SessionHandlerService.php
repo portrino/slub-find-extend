@@ -10,7 +10,6 @@ use TYPO3\CMS\Core\SingletonInterface;
  * From http://stackoverflow.com/questions/17440847/typo3-extbase-set-and-get-values-from-session
  *
  * Class SessionHandlerService
- * @package Slub\SlubFindExtend\Services
  */
 class SessionHandlerService implements SingletonInterface
 {
@@ -18,7 +17,7 @@ class SessionHandlerService implements SingletonInterface
 
     /**
      * Returns the object stored in the user´s PHP session
-     * @return Object the stored object
+     * @return object the stored object
      */
     public function restoreFromSession($key)
     {
@@ -50,7 +49,7 @@ class SessionHandlerService implements SingletonInterface
         return $this;
     }
 
-    public function setPrefixKey($prefixKey)
+    public function setPrefixKey($prefixKey): void
     {
         $this->prefixKey = $prefixKey;
     }

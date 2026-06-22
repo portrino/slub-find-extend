@@ -26,29 +26,26 @@ namespace Slub\SlubFindExtend\ViewHelpers\Find;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
-
 /**
  * UpdateSortConfigViewHelper
  *
  * updates sorting label if there is an alternative label
  */
-class UpdateSortConfigViewHelper extends AbstractViewHelper {
-
-
+class UpdateSortConfigViewHelper extends AbstractViewHelper
+{
     /**
      * Registers own arguments.
      */
-    public function initializeArguments() {
+    public function initializeArguments(): void
+    {
         parent::initializeArguments();
         $this->registerArgument('translate', 'array', 'translate path and extension', false, false);
     }
 
-
     /**
-     *
      * @return string
      */
-     public static function renderStatic(
+    public static function renderStatic(
         array $arguments,
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
@@ -74,5 +71,3 @@ class UpdateSortConfigViewHelper extends AbstractViewHelper {
         return $renderChildrenClosure();
     }
 }
-
-?>

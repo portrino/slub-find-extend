@@ -14,23 +14,23 @@ namespace Slub\SlubFindExtend\Slots;
  *
  * The TYPO3 project - inspiring people to share!
  */
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use Slub\SlubFindExtend\Backend\Solr\SearchHandler;
-use Solarium\QueryType\Select\Query\Query;
 use Slub\SlubFindExtend\Services\StopWordService;
+use Solarium\QueryType\Select\Query\Query;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 
 /**
  * Slot implementation before the
  *
  * @category    Slots
- * @package     TYPO3
  */
 class AdvancedQuery
 {
     /**
-     * @var \Slub\SlubFindExtend\Services\StopWordService
+     * @var StopWordService
      */
-    protected $stopWordService = null;
+    protected $stopWordService;
 
     /**
      * Contains the settings of the current extension
@@ -41,34 +41,19 @@ class AdvancedQuery
     protected $settings;
 
     /**
-     * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
+     * @var ConfigurationManagerInterface
      */
     protected $configurationManager;
 
     /**
-     * @param \Slub\SlubFindExtend\Services\StopWordService $stopWordService
+     * @param StopWordService|null $stopWordService
+     * @param ConfigurationManagerInterface|null $configurationManager
      */
-    public function __construct(\Slub\SlubFindExtend\Services\StopWordService $stopWordService)
+    public function __construct(?StopWordService $stopWordService = null, ?ConfigurationManagerInterface $configurationManager = null)
     {
-        $this->stopWordService = $stopWordService;
-    }
-
-    /**
-     * @param \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager
-     * @return void
-     */
-    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
-    {
-        $this->configurationManager = $configurationManager;
-        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS);
-    }
-
-    /**
-     * @param \Slub\SlubFindExtend\Services\StopWordService $stopWordService
-     * @return void
-     */
-    public function injectStopWordService(StopWordService $stopWordService){
-        $this->stopWordService = $stopWordService;
+        $this->stopWordService = $stopWordService ?? GeneralUtility::makeInstance(StopWordService::class);
+        $this->configurationManager = $configurationManager ?? GeneralUtility::makeInstance(ConfigurationManagerInterface::class);
+        $this->settings = $this->configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'Find', 'Find');
     }
 
     /**
@@ -98,9 +83,9 @@ class AdvancedQuery
             return '';
         }
 
-        $boost = ($settings['queryModifier']['phraseMatchBoost']) ? '^'.$settings['queryModifier']['phraseMatchBoost'] : '';
+        $boost = ($settings['queryModifier']['phraseMatchBoost']) ? '^' . $settings['queryModifier']['phraseMatchBoost'] : '';
 
-        return ' OR ' . $searchHandler->createAdvancedQueryString('"'.$originalQuerystring.'"') . $boost;
+        return ' OR ' . $searchHandler->createAdvancedQueryString('"' . $originalQuerystring . '"') . $boost;
     }
 
     public function handleIsilMatch($originalQuerystring, $searchHandler, $settings)
@@ -124,11 +109,11 @@ class AdvancedQuery
     /**
      * @param array $settings Settings Array
      */
-    private function handleStripIntFields(&$settings, $queryParameter)
+    private function handleStripIntFields(&$settings, $queryParameter): void
     {
         if (!is_numeric(substr($queryParameter, 0, 2))) {
             foreach ($settings['DismaxFields'] as $key => $value) {
-                if (intval($key) >= 800) {
+                if ((int)$key >= 800) {
                     unset($settings['DismaxFields'][$key], $queryParameter);
                 }
             }
@@ -142,7 +127,7 @@ class AdvancedQuery
      */
     private function stripCharsFromQuery($queryParameter)
     {
-        return str_replace(['/','\\'], [' '], $queryParameter);
+        return str_replace(['/', '\\'], [' '], $queryParameter);
     }
 
     /**
@@ -152,7 +137,7 @@ class AdvancedQuery
      */
     private function cleanParameter($queryParameter)
     {
-        return str_replace([':','?', ';', '-', '!', '&', '–', '(', ')', '+', '=', '$', '[', ']', '.', '„', '“', '‘', '’'], ' ', $queryParameter);
+        return str_replace([':', '?', ';', '-', '!', '&', '–', '(', ')', '+', '=', '$', '[', ']', '.', '„', '“', '‘', '’'], ' ', $queryParameter);
     }
 
     /**
@@ -161,7 +146,7 @@ class AdvancedQuery
      * @param Query &$query
      * @param array $arguments request arguments
      */
-    public function build(&$query, $arguments)
+    public function build(&$query, $arguments): void
     {
         $queryParameter = trim(is_array($arguments['q']['default']) ? $arguments['q']['default'][0] : $arguments['q']['default']);
         $originalQueryParameter = $queryParameter;
@@ -170,25 +155,25 @@ class AdvancedQuery
 
         if ($settings) {
             if (strlen($queryParameter) > 0) {
-                if ($this->settings['queryModifier']) {
-                    if (!$this->settings['queryModifier']['phraseMatch']) {
+                if (isset($this->settings['queryModifier'])) {
+                    if (!isset($this->settings['queryModifier']['phraseMatch']) || !$this->settings['queryModifier']['phraseMatch']) {
                         $queryParameter = $this->stripCharsFromQuery($queryParameter);
                     }
 
-                    if ($this->settings['queryModifier']['cleanParameter']) {
+                    if (isset($this->settings['queryModifier']['cleanParameter']) && $this->settings['queryModifier']['cleanParameter']) {
                         $queryParameter = $this->cleanParameter($queryParameter);
                     }
 
-                    if ($this->settings['queryModifier']['stopwords']) {
+                    if (isset($this->settings['queryModifier']['stopwords']) && $this->settings['queryModifier']['stopwords']) {
                         $queryParameter = $this->stopWordService->cleanQueryString($queryParameter);
                     }
 
-                    if ($this->settings['queryModifier']['numeric']) {
+                    if (isset($this->settings['queryModifier']['numeric']) && $this->settings['queryModifier']['numeric']) {
                         $queryParameter = $this->handleNumeric($queryParameter);
                     }
                 }
 
-                if ($this->settings['queryModifier'] && $this->settings['queryModifier']['stripIntFields']) {
+                if (isset($this->settings['queryModifier']['stripIntFields']) && $this->settings['queryModifier']['stripIntFields']) {
                     $this->handleStripIntFields($settings, $queryParameter);
                 }
 
@@ -198,23 +183,23 @@ class AdvancedQuery
 
                 $querystring = $searchHandler->createAdvancedQueryString($queryParameter);
 
-                if ($this->settings['queryModifier'] && $this->settings['queryModifier']['phraseMatch']) {
+                if (isset($this->settings['queryModifier']['phraseMatch']) && $this->settings['queryModifier']['phraseMatch']) {
                     $querystring .= $this->handlePhraseMatch($originalQueryParameter, $searchHandler, $this->settings);
                 }
 
-                if ($this->settings['queryModifier'] && $this->settings['queryModifier']['isilMatch']) {
+                if (isset($this->settings['queryModifier']['isilMatch']) && $this->settings['queryModifier']['isilMatch']) {
                     $querystring .= $this->handleIsilMatch($originalQueryParameter, $searchHandler, $this->settings);
                 }
 
                 $query->setQuery($querystring);
             } else {
-                if ($settings['DismaxHandler'] === 'edismax') {
+                if (isset($settings['DismaxHandler']) && $settings['DismaxHandler'] === 'edismax') {
                     $dismax = $query->getEDisMax();
                 } else {
                     $dismax = $query->getDisMax();
                 }
 
-                if ($settings['DismaxParams']) {
+                if (isset($settings['DismaxParams']) && $settings['DismaxParams']) {
                     foreach ($settings['DismaxParams'] as $params) {
                         if ($params['name'] === 'bf') {
                             $dismax->setBoostFunctions($params['value']);

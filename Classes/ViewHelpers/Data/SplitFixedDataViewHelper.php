@@ -15,9 +15,8 @@ class SplitFixedDataViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('string', 'string', 'The string to split into components', false, null);
@@ -40,22 +39,21 @@ class SplitFixedDataViewHelper extends AbstractViewHelper
 
         $lengths = explode(',', $arguments['lengths']);
 
-        if (sizeof($lengths) == 0) {
+        if (count($lengths) == 0) {
             return $lengths;
-        } else {
-            $splittedString = [];
-
-            foreach ($lengths as $length) {
-                if (substr($string, 0, 1) === $arguments['placeholder']) {
-                    $splittedString[] = '';
-                    $string = substr($string, 1);
-                } else {
-                    $splittedString[] = substr($string, 0, $length);
-                    $string = substr($string, $length);
-                }
-            }
-
-            return $splittedString;
         }
+        $splittedString = [];
+
+        foreach ($lengths as $length) {
+            if (substr($string, 0, 1) === $arguments['placeholder']) {
+                $splittedString[] = '';
+                $string = substr($string, 1);
+            } else {
+                $splittedString[] = substr($string, 0, $length);
+                $string = substr($string, $length);
+            }
+        }
+
+        return $splittedString;
     }
 }

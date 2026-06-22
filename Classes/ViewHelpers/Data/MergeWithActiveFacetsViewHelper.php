@@ -16,9 +16,8 @@ class MergeWithActiveFacetsViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('data', 'array', 'The data to test', false, null);
@@ -34,22 +33,20 @@ class MergeWithActiveFacetsViewHelper extends AbstractViewHelper
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
-
         /** @var Field $data */
         $data = $arguments['data'];
 
         if (is_array($arguments['activeFacets']) && is_array($arguments['activeFacets'][$arguments['key']]) && count($arguments['activeFacets'][$arguments['key']])) {
-            $mergedData = array('values' => $data->getValues());
+            $mergedData = ['values' => $data->getValues()];
 
             foreach ($arguments['activeFacets'][$arguments['key']] as $activeKey => $activeValue) {
                 if (empty($mergedData['values'][$activeKey])) {
-                    $mergedData['values'] = array_merge(array($activeKey => $activeValue), $mergedData['values']);
+                    $mergedData['values'] = array_merge([$activeKey => $activeValue], $mergedData['values']);
                 }
             }
 
             return $mergedData;
-        } else {
-            return $data;
         }
+        return $data;
     }
 }

@@ -1,18 +1,18 @@
 <?php
+
 namespace Slub\SlubFindExtend\Tests\Unit\ViewHelpers;
 
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Slub\SlubFindExtend\Tests\Unit\Fixtures\LoadableClass;
+use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 
 class LinksFromDataViewHelperTest extends UnitTestCase
 {
-
     /**
      * @test
      */
-    public function methodReturnsTrue()
+    public function methodReturnsTrue(): void
     {
         $firstClassObject = new LoadableClass();
-        $this->assertTrue($firstClassObject->returnsTrue());
+        self::assertTrue($firstClassObject->returnsTrue());
     }
 }

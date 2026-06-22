@@ -4,15 +4,12 @@ namespace Slub\SlubFindExtend\Services;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-
 /**
  * Class RedisService
- * @package Slub\SlubFindExtend\Services
  */
 class RediService
 {
-
-    public function getCached($document, $enriched) 
+    public function getCached($document, $enriched)
     {
         $cache = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('resolv_link_electronic');
         $cacheIdentifier = sha1($document['id']);
@@ -28,7 +25,6 @@ class RediService
 
     /**
      * Tries to resolve Article against holdings
-     *
      */
     private function getElectronicHoldingFromData($document, $enriched)
     {
@@ -54,20 +50,20 @@ class RediService
         $firstAuthorAulast = $firstAuthor['rft.aulast'];
         $firstAuthorAufirst = $firstAuthor['rft.aufirst'];
 
-        $url = 'http://www-s.redi-bw.de/links/?rl_site=slub&atitle='.urlencode($article).
-            '&issn='.urlencode($firstISSN).
-            '&volume='.urlencode($volume).
-            '&spage='.urlencode($spage).
-            '&epage='.urlencode($epage).
-            '&pages='.urlencode($pages).
-            '&issue='.urlencode($issue).
-            '&aulast='.urlencode($firstAuthorAulast).
-            '&aufirst='.urlencode($firstAuthorAufirst).
-            '&genre='.urlencode($genre).
-            '&sid=katalogbeta.slub-dresden.de&date='.urlencode($date).
-            '&language='.urlencode($language).
-            '&doi='.urlencode($doi).
-            '&title='.urlencode($jtitle);
+        $url = 'http://www-s.redi-bw.de/links/?rl_site=slub&atitle=' . urlencode($article) .
+            '&issn=' . urlencode($firstISSN) .
+            '&volume=' . urlencode($volume) .
+            '&spage=' . urlencode($spage) .
+            '&epage=' . urlencode($epage) .
+            '&pages=' . urlencode($pages) .
+            '&issue=' . urlencode($issue) .
+            '&aulast=' . urlencode($firstAuthorAulast) .
+            '&aufirst=' . urlencode($firstAuthorAufirst) .
+            '&genre=' . urlencode($genre) .
+            '&sid=katalogbeta.slub-dresden.de&date=' . urlencode($date) .
+            '&language=' . urlencode($language) .
+            '&doi=' . urlencode($doi) .
+            '&title=' . urlencode($jtitle);
 
         $doc = new \DOMDocument();
 
@@ -94,7 +90,6 @@ class RediService
         $links = [];
 
         for ($i = 0; $i < $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p")->length; $i++) {
-
             $link = [];
 
             $ezb_status_code = 10;
@@ -102,7 +97,6 @@ class RediService
             $ezb_status = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class, 't_ezb_yellow') or contains(@class, 't_ezb_green') or contains(@class, 't_ezb_red')]/@class")->item($i)->nodeValue;
             $ezb_status_via = trim($xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p")->item($i)->nodeValue);
             $ezb_url = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href")->item($i)->nodeValue;
-
 
             $ezb_via = substr($ezb_status_via, strpos($ezb_status_via, 'via')+4, -4);
 
@@ -161,4 +155,3 @@ class RediService
         return $data;
     }
 }
-

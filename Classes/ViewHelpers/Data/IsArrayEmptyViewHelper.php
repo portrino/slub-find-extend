@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * IsArrayEmptyViewHelper
  *
  * Checks if an array is empty.
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -16,16 +15,15 @@ class IsArrayEmptyViewHelper extends AbstractConditionViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('array', 'array', 'The array to check', true, null);
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public static function renderStatic(
         array $arguments,

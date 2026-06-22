@@ -1,4 +1,5 @@
 <?php
+
 /*******************************************************************************
  * Copyright notice
  *
@@ -55,7 +56,7 @@ class HighlightFieldViewHelper extends AbstractViewHelper
     /**
      * Registers own arguments.
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('results', '\Solarium\QueryType\Select\Result\Result', 'Query results', true);
@@ -69,7 +70,6 @@ class HighlightFieldViewHelper extends AbstractViewHelper
         $this->registerArgument('raw', 'boolean', 'whether to not HTML escape the output', false, false);
         $this->registerArgument('translate', 'array', 'translate path and extension', false, false);
     }
-
 
     /**
      * @return string
@@ -92,7 +92,6 @@ class HighlightFieldViewHelper extends AbstractViewHelper
         }
     }
 
-
     /**
      * Returns string or array of strings with highlighted areas enclosed
      * by \ueeee and \ueeef.
@@ -105,19 +104,19 @@ class HighlightFieldViewHelper extends AbstractViewHelper
         $highlightInfo = $this->getHighlightInfo();
 
         if (is_array($fieldContent)) {
-            $result = array();
+            $result = [];
             foreach ($fieldContent as $singleField) {
                 if ($this->arguments['translate']) {
-                    $singleField = \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'].'.'.$singleField, $this->arguments['translate']['extension']) ?
-                        \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'].'.'.$singleField, $this->arguments['translate']['extension']) : $singleField;
+                    $singleField = \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'] . '.' . $singleField, $this->arguments['translate']['extension']) ?
+                        \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'] . '.' . $singleField, $this->arguments['translate']['extension']) : $singleField;
                 }
 
                 $result[] = $this->highlightSingleField($singleField, $highlightInfo);
             }
         } else {
             if ($this->arguments['translate']) {
-                $fieldContent = \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'].'.'.$fieldContent, $this->arguments['translate']['extension']) ?
-                    \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'].'.'.$fieldContent, $this->arguments['translate']['extension']) : $fieldContent;
+                $fieldContent = \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'] . '.' . $fieldContent, $this->arguments['translate']['extension']) ?
+                    \TYPO3\CMS\Extbase\Utility\LocalizationUtility::translate($this->arguments['translate']['path'] . '.' . $fieldContent, $this->arguments['translate']['extension']) : $fieldContent;
             }
 
             $result = $this->highlightSingleField($fieldContent, $highlightInfo);
@@ -125,7 +124,6 @@ class HighlightFieldViewHelper extends AbstractViewHelper
 
         return $result;
     }
-
 
     /**
      * Returns $fieldString with highlighted areas enclosed by \ueeee and \ueeef.
@@ -139,7 +137,7 @@ class HighlightFieldViewHelper extends AbstractViewHelper
         $result = null;
 
         foreach ($highlightInfo as $highlightItem) {
-            $highlightItemStripped = str_replace(array('\ueeee', '\ueeef'), array('', ''), $highlightItem);
+            $highlightItemStripped = str_replace(['\ueeee', '\ueeef'], ['', ''], $highlightItem);
             if (strpos($fieldString, $highlightItemStripped) !== false) {
                 // HTML escape the text here if not explicitly configured to not do so.
                 // Use f:format.raw in the template to avoid double escaping the HTML tags.
@@ -148,8 +146,8 @@ class HighlightFieldViewHelper extends AbstractViewHelper
                 }
 
                 $highlightItemMarkedUp = str_replace(
-                    array('\ueeee', '\ueeef'),
-                    array($this->arguments['highlightTagOpen'], $this->arguments['highlightTagClose']),
+                    ['\ueeee', '\ueeef'],
+                    [$this->arguments['highlightTagOpen'], $this->arguments['highlightTagClose']],
                     $highlightItem
                 );
                 $result = str_replace($highlightItemStripped, $highlightItemMarkedUp, $fieldString);
@@ -169,7 +167,6 @@ class HighlightFieldViewHelper extends AbstractViewHelper
         return $result;
     }
 
-
     /**
      * Returns highlight information for the document and field configured in
      * our arguments.
@@ -178,7 +175,7 @@ class HighlightFieldViewHelper extends AbstractViewHelper
      */
     private function getHighlightInfo()
     {
-        $highlightInfo = array();
+        $highlightInfo = [];
         $documentID = $this->arguments['document'][$this->arguments['idKey']];
         if ($documentID) {
             $highlighting = $this->arguments['results']->getHighlighting();

@@ -6,7 +6,6 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  * FilterBlacklistedViewHelper
  *
  * Filters the values of an array against a blacklist.
- *
  */
 
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
@@ -16,9 +15,8 @@ class FilterBlacklistedViewHelper extends AbstractViewHelper
 {
     /**
      * Register arguments.
-     * @return void
      */
-    public function initializeArguments()
+    public function initializeArguments(): void
     {
         parent::initializeArguments();
         $this->registerArgument('data', 'array', 'The data checked against the blacklist', true, null);
@@ -37,13 +35,12 @@ class FilterBlacklistedViewHelper extends AbstractViewHelper
         if (is_array($arguments['data']) && is_array($arguments['blacklist'])) {
             if ($arguments['blacklistOnKeys'] === false) {
                 return preg_grep('/^(' . str_replace('/', '\/', implode('|', $arguments['blacklist'])) . ')$/', $arguments['data'], PREG_GREP_INVERT);
-            } else {
-                return array_flip(preg_grep('/^(' . str_replace('/', '\/', implode('|', $arguments['blacklist'])) . ')$/', array_flip($arguments['data']), PREG_GREP_INVERT));
             }
-        } elseif (is_array($arguments['data'])) {
-            return $arguments['data'];
-        } else {
-            return array();
+            return array_flip(preg_grep('/^(' . str_replace('/', '\/', implode('|', $arguments['blacklist'])) . ')$/', array_flip($arguments['data']), PREG_GREP_INVERT));
         }
+        if (is_array($arguments['data'])) {
+            return $arguments['data'];
+        }
+        return [];
     }
 }

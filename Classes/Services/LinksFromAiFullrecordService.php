@@ -4,7 +4,6 @@ namespace Slub\SlubFindExtend\Services;
 
 /**
  * Class StatusService
- * @package Slub\SlubFindExtend\Services
  */
 class LinksFromAiFullrecordService
 {
@@ -13,7 +12,7 @@ class LinksFromAiFullrecordService
      *
      * @param object $fullrecord
      * @param string $isil
-     * @param boolean $resolve
+     * @param bool $resolve
      * @return array
      */
     public function getLinks($fullrecord, $isil = '', $resolve = false)
