@@ -15,9 +15,9 @@ class RenderUserViewHelper extends AbstractViewHelper
 
     public function render()
     {
-        $this->templateVariableContainer->add('user', $GLOBALS['TSFE']->fe_user->user);
+        $this->templateVariableContainer->add('user', $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user);
 
-        $user = $GLOBALS['TSFE']->fe_user->user;
+        $user = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user;
         $userid = $user['username'];
         if (strpos($user['telephone'], '@') !== false) {
             $userid = explode('@', $user['telephone'])[0];

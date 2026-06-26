@@ -35,7 +35,7 @@ class EqualsViewHelper extends AbstractConditionViewHelper
      * @param array $arguments
      * @return bool
      */
-    protected static function evaluateCondition($arguments = null)
+    public static function verdict(array $arguments, \TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface $renderingContext): bool
     {
         $string = (string)$arguments['string'];
         $test = (string)$arguments['test'];

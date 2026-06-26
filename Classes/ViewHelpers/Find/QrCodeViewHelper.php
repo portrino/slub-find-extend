@@ -8,11 +8,10 @@ namespace Slub\SlubFindExtend\ViewHelpers\Find;
  * This class generates a QR code from a given URL.
  */
 
+use Slub\SlubFindExtend\Utility\LocalVendorAutoloader;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
-
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
 
 class QrCodeViewHelper extends AbstractViewHelper
 {
@@ -33,6 +32,8 @@ class QrCodeViewHelper extends AbstractViewHelper
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
+        LocalVendorAutoloader::load();
+
         $renderer = new \BaconQrCode\Renderer\Image\Svg();
         $renderer->setHeight(256);
         $renderer->setWidth(256);

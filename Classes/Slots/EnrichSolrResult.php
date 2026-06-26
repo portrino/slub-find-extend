@@ -96,7 +96,7 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
 
                     if ($filter_passed) {
                         $field_data = '';
-                        $user_data = ($GLOBALS['TSFE']->fe_user->user['username']) ? $GLOBALS['TSFE']->fe_user->user['username'] : '';
+                        $user_data = ($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user['username']) ? $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user['username'] : '';
 
                         $check_fields = is_array($fields[$enrichment['check_field']]) ? $fields[$enrichment['check_field']] : [$fields[$enrichment['check_field']]];
 

@@ -3,8 +3,7 @@
 namespace Slub\SlubFindExtend\Services;
 
 use File_MARC_Reference;
-
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
+use Slub\SlubFindExtend\Utility\LocalVendorAutoloader;
 
 /**
  * Class MarcRefrenceResolverService
@@ -21,6 +20,8 @@ class MarcRefrenceResolverService
      */
     public function resolveReference($path, $record, $index = null)
     {
+        LocalVendorAutoloader::load();
+
         if (!$record instanceof \File_MARC_Record) {
             return false;
         }

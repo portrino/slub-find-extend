@@ -2,16 +2,17 @@
 
 namespace Slub\SlubFindExtend\Services;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 /**
  * Class RedisService
  */
 class RediService
 {
+    public function __construct(private readonly \TYPO3\CMS\Core\Cache\CacheManager $cacheManager)
+    {
+    }
     public function getCached($document, $enriched)
     {
-        $cache = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('resolv_link_electronic');
+        $cache = $this->cacheManager->getCache('resolv_link_electronic');
         $cacheIdentifier = sha1($document['id']);
         $entry = $cache->get($cacheIdentifier);
         if (!$entry) {

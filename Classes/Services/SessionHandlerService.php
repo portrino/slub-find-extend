@@ -21,7 +21,7 @@ class SessionHandlerService implements SingletonInterface
      */
     public function restoreFromSession($key)
     {
-        $sessionData = $GLOBALS['TSFE']->fe_user->getKey('ses', $this->prefixKey . $key);
+        $sessionData = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->getKey('ses', $this->prefixKey . $key);
         return unserialize($sessionData);
     }
 
@@ -33,8 +33,8 @@ class SessionHandlerService implements SingletonInterface
     public function writeToSession($object, $key)
     {
         $sessionData = serialize($object);
-        $GLOBALS['TSFE']->fe_user->setKey('ses', $this->prefixKey . $key, $sessionData);
-        $GLOBALS['TSFE']->fe_user->storeSessionData();
+        $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->setKey('ses', $this->prefixKey . $key, $sessionData);
+        $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->storeSessionData();
         return $this;
     }
 
@@ -44,8 +44,8 @@ class SessionHandlerService implements SingletonInterface
      */
     public function cleanUpSession($key)
     {
-        $GLOBALS['TSFE']->fe_user->setKey('ses', $this->prefixKey . $key, null);
-        $GLOBALS['TSFE']->fe_user->storeSessionData();
+        $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->setKey('ses', $this->prefixKey . $key, null);
+        $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->storeSessionData();
         return $this;
     }
 

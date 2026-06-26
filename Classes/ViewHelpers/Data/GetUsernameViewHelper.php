@@ -2,6 +2,9 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
@@ -11,13 +14,18 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 class GetUsernameViewHelper extends AbstractViewHelper
 {
     /**
+     * @param mixed[] $arguments
+     * @param \Closure $renderChildrenClosure
+     * @param RenderingContextInterface $renderingContext
      * @return string
+     * @throws AspectNotFoundException
      */
     public static function renderStatic(
         array $arguments,
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
-    ) {
-        return (string)($GLOBALS['TSFE']->fe_user->user['username']);
+    ): string {
+        $context = GeneralUtility::makeInstance(Context::class);
+        return (string)$context->getPropertyFromAspect('frontend.user', 'username');
     }
 }

@@ -23,8 +23,7 @@ namespace Slub\SlubFindExtend\ViewHelpers\Data;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
-
+use Slub\SlubFindExtend\Utility\LocalVendorAutoloader;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 /**
@@ -43,6 +42,8 @@ class GetAllMarcDataViewHelper extends AbstractViewHelper
 
     public function render()
     {
+        LocalVendorAutoloader::load();
+
         $lines = [];
 
         /** @var \File_MARC_Record $record */

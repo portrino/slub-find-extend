@@ -3,10 +3,9 @@
 namespace Slub\SlubFindExtend\ViewHelpers\Data;
 
 use File_MARC_Reference;
+use Slub\SlubFindExtend\Utility\LocalVendorAutoloader;
 use TYPO3Fluid\Fluid\Core\Rendering\RenderingContextInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
-
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
 
 /**
  * GetMarcDataViewHelper
@@ -33,6 +32,8 @@ class GetMarcDataViewHelper extends AbstractViewHelper
         RenderingContextInterface $renderingContext
     ) {
         if ($arguments['record']) {
+            LocalVendorAutoloader::load();
+
             $reference = new File_MARC_Reference((string)$arguments['path'], $arguments['record']);
             $content = $reference->content;
 

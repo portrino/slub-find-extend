@@ -17,8 +17,7 @@ namespace Slub\SlubFindExtend\Slots\Decoder;
 
 use File_MARC;
 use File_MARC_Record;
-
-require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('slub_find_extend') . 'vendor/autoload.php');
+use Slub\SlubFindExtend\Utility\LocalVendorAutoloader;
 
 /**
  * Slot implementation before the
@@ -35,6 +34,8 @@ class Marc21
      */
     public function decode($marc)
     {
+        LocalVendorAutoloader::load();
+
         $marc = str_replace(
             ['#29;', '#30;', '#31;'],
             ["\x1D", "\x1E", "\x1F"],

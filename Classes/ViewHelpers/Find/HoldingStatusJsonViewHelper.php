@@ -2,7 +2,6 @@
 
 namespace Slub\SlubFindExtend\ViewHelpers\Find;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper;
 
 class HoldingStatusJsonViewHelper extends AbstractViewHelper
@@ -19,7 +18,7 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
      */
     protected $holdingStatusService;
 
-    public function __construct(\Slub\SlubFindExtend\Services\HoldingStatusService $holdingStatusService)
+    public function __construct(\Slub\SlubFindExtend\Services\HoldingStatusService $holdingStatusService, private readonly \TYPO3\CMS\Core\Cache\CacheManager $cacheManager)
     {
         $this->holdingStatusService = $holdingStatusService;
     }
@@ -196,7 +195,7 @@ class HoldingStatusJsonViewHelper extends AbstractViewHelper
         }
         if ((in_array('Online', $data['documents'][0]['facet_avail'])) || ($data['documents'][0]['physical'] && in_array('Online-Ressource', $data['documents'][0]['physical']))) {
             if (!$this->arguments['index']) {
-                $cache = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('resolv_link_electronic');
+                $cache = $this->cacheManager->getCache('resolv_link_electronic');
                 $cacheIdentifier = sha1($data['documents'][0]['id']);
                 $entry = $cache->get($cacheIdentifier);
                 if (!$entry) {
