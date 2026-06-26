@@ -20,7 +20,6 @@ class GetNextRootPageViewHelper extends AbstractViewHelper
         \Closure $renderChildrenClosure,
         RenderingContextInterface $renderingContext
     ) {
-
         $rootline = [];
 
         $request = null;
