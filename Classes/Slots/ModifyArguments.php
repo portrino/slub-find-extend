@@ -28,20 +28,20 @@ class ModifyArguments
     /**
      * Contains the settings of the current extension
      *
-     * @var array
+     * @var array<string, mixed>
      * @api
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * @var SessionHandlerService
      */
-    protected $sessionHandler;
+    protected SessionHandlerService $sessionHandler;
 
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     public function __construct(?ConfigurationManagerInterface $configurationManager = null, ?SessionHandlerService $sessionHandler = null)
     {
@@ -53,9 +53,9 @@ class ModifyArguments
     /**
      * Slot to modify request arguments
      *
-     * @param array &$assignments
+     * @param array<string, mixed> &$arguments
      */
-    public function modify(&$arguments): void
+    public function modify(array &$arguments): void
     {
         $id = $arguments['id'] ?? '';
         if (!is_scalar($id) || (string)$id === '') {
@@ -68,7 +68,7 @@ class ModifyArguments
             $this->sessionHandler->writeToSession($underlyingQuery, $id . '_underlyingQuery');
         } else {
             $storedUnderlyingQuery = $this->sessionHandler->restoreFromSession($id . '_underlyingQuery');
-            if ($storedUnderlyingQuery) {
+            if ($storedUnderlyingQuery !== null && $storedUnderlyingQuery !== false && $storedUnderlyingQuery !== '') {
                 $arguments['underlyingQuery'] = $storedUnderlyingQuery;
             }
         }

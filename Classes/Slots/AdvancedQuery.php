@@ -27,23 +27,20 @@ use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
  */
 class AdvancedQuery
 {
-    /**
-     * @var StopWordService
-     */
-    protected $stopWordService;
+    protected StopWordService $stopWordService;
 
     /**
      * Contains the settings of the current extension
      *
-     * @var array
+     * @var array<string, mixed>
      * @api
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * @param StopWordService|null $stopWordService
@@ -59,9 +56,9 @@ class AdvancedQuery
     /**
      * Special handling for pure numeric queries
      *
-     * @param $parameter
+     * @param string $parameter
      */
-    private function handleNumeric($parameter)
+    private function handleNumeric(string $parameter): string
     {
         if (is_numeric($parameter)) {
             $parameter = sprintf($this->settings['queryModifier']['numeric'], $parameter);
@@ -71,30 +68,32 @@ class AdvancedQuery
     }
 
     /**
-     * @param string $querystring
      * @param string $originalQuerystring
      * @param SearchHandler $searchHandler
-     * @param array $settings
+     * @param array<string, mixed> $settings
      * @return string
      */
-    public function handlePhraseMatch($originalQuerystring, $searchHandler, $settings)
+    public function handlePhraseMatch(string $originalQuerystring, SearchHandler $searchHandler, array $settings): string
     {
-        if (preg_match('/^".*"$/', trim($originalQuerystring))) {
+        if (preg_match('/^".*"$/', trim($originalQuerystring)) === 1) {
             return '';
         }
 
-        $boost = ($settings['queryModifier']['phraseMatchBoost']) ? '^' . $settings['queryModifier']['phraseMatchBoost'] : '';
+        $boost = ($settings['queryModifier']['phraseMatchBoost'] ?? '') !== '' ? '^' . $settings['queryModifier']['phraseMatchBoost'] : '';
 
         return ' OR ' . $searchHandler->createAdvancedQueryString('"' . $originalQuerystring . '"') . $boost;
     }
 
-    public function handleIsilMatch($originalQuerystring, $searchHandler, $settings)
+    /**
+     * @param array<string, mixed> $settings
+     */
+    public function handleIsilMatch(string $originalQuerystring, SearchHandler $searchHandler, array $settings): string
     {
-        if (preg_match('/^".*"$/', trim($originalQuerystring))) {
+        if (preg_match('/^".*"$/', trim($originalQuerystring)) === 1) {
             return '';
         }
 
-        if (!$settings['queryModifier']['isilQueryString']) {
+        if (($settings['queryModifier']['isilQueryString'] ?? '') === '') {
             return '';
         }
 
@@ -107,9 +106,9 @@ class AdvancedQuery
     }
 
     /**
-     * @param array $settings Settings Array
+     * @param array<string, mixed> $settings Settings Array
      */
-    private function handleStripIntFields(&$settings, $queryParameter): void
+    private function handleStripIntFields(array &$settings, string $queryParameter): void
     {
         if (!is_numeric(substr($queryParameter, 0, 2))) {
             foreach ($settings['DismaxFields'] as $key => $value) {
@@ -125,7 +124,7 @@ class AdvancedQuery
      *
      * @param string $queryParameter Settings Array
      */
-    private function stripCharsFromQuery($queryParameter)
+    private function stripCharsFromQuery(string $queryParameter): string
     {
         return str_replace(['/', '\\'], [' '], $queryParameter);
     }
@@ -135,7 +134,7 @@ class AdvancedQuery
      *
      * @param string $queryParameter Settings Array
      */
-    private function cleanParameter($queryParameter)
+    private function cleanParameter(string $queryParameter): string
     {
         return str_replace([':', '?', ';', '-', '!', '&', '–', '(', ')', '+', '=', '$', '[', ']', '.', '„', '“', '‘', '’'], ' ', $queryParameter);
     }
@@ -144,62 +143,60 @@ class AdvancedQuery
      * Slot to build the advanced query
      *
      * @param Query &$query
-     * @param array $arguments request arguments
+     * @param array<string, mixed> $arguments request arguments
      */
-    public function build(&$query, $arguments): void
+    public function build(Query &$query, array $arguments): void
     {
         $queryParameter = trim(is_array($arguments['q']['default']) ? $arguments['q']['default'][0] : $arguments['q']['default']);
         $originalQueryParameter = $queryParameter;
 
         $settings = $this->settings['components'];
 
-        if ($settings) {
+        if ($settings !== []) {
             if (strlen($queryParameter) > 0) {
                 if (isset($this->settings['queryModifier'])) {
-                    if (!isset($this->settings['queryModifier']['phraseMatch']) || !$this->settings['queryModifier']['phraseMatch']) {
+                    if (!(bool)($this->settings['queryModifier']['phraseMatch'] ?? false)) {
                         $queryParameter = $this->stripCharsFromQuery($queryParameter);
                     }
 
-                    if (isset($this->settings['queryModifier']['cleanParameter']) && $this->settings['queryModifier']['cleanParameter']) {
+                    if ((bool)($this->settings['queryModifier']['cleanParameter'] ?? false)) {
                         $queryParameter = $this->cleanParameter($queryParameter);
                     }
 
-                    if (isset($this->settings['queryModifier']['stopwords']) && $this->settings['queryModifier']['stopwords']) {
+                    if ((bool)($this->settings['queryModifier']['stopwords'] ?? false)) {
                         $queryParameter = $this->stopWordService->cleanQueryString($queryParameter);
                     }
 
-                    if (isset($this->settings['queryModifier']['numeric']) && $this->settings['queryModifier']['numeric']) {
+                    if (($this->settings['queryModifier']['numeric'] ?? '') !== '') {
                         $queryParameter = $this->handleNumeric($queryParameter);
                     }
                 }
 
-                if (isset($this->settings['queryModifier']['stripIntFields']) && $this->settings['queryModifier']['stripIntFields']) {
+                if ((bool)($this->settings['queryModifier']['stripIntFields'] ?? false)) {
                     $this->handleStripIntFields($settings, $queryParameter);
                 }
 
                 $searchHandler = new SearchHandler($settings);
 
-                $boostquery = $searchHandler->createBoostQueryString($queryParameter);
-
                 $querystring = $searchHandler->createAdvancedQueryString($queryParameter);
 
-                if (isset($this->settings['queryModifier']['phraseMatch']) && $this->settings['queryModifier']['phraseMatch']) {
+                if ((bool)($this->settings['queryModifier']['phraseMatch'] ?? false)) {
                     $querystring .= $this->handlePhraseMatch($originalQueryParameter, $searchHandler, $this->settings);
                 }
 
-                if (isset($this->settings['queryModifier']['isilMatch']) && $this->settings['queryModifier']['isilMatch']) {
+                if ((bool)($this->settings['queryModifier']['isilMatch'] ?? false)) {
                     $querystring .= $this->handleIsilMatch($originalQueryParameter, $searchHandler, $this->settings);
                 }
 
                 $query->setQuery($querystring);
             } else {
-                if (isset($settings['DismaxHandler']) && $settings['DismaxHandler'] === 'edismax') {
+                if (($settings['DismaxHandler'] ?? '') === 'edismax') {
                     $dismax = $query->getEDisMax();
                 } else {
                     $dismax = $query->getDisMax();
                 }
 
-                if (isset($settings['DismaxParams']) && $settings['DismaxParams']) {
+                if (isset($settings['DismaxParams']) && is_array($settings['DismaxParams']) && $settings['DismaxParams'] !== []) {
                     foreach ($settings['DismaxParams'] as $params) {
                         if ($params['name'] === 'bf') {
                             $dismax->setBoostFunctions($params['value']);

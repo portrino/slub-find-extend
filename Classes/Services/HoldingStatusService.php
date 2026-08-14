@@ -12,10 +12,10 @@ class HoldingStatusService
     /**
      * Returns the holding state
      *
-     * @param $exemplare
+     * @param mixed $exemplare
      * @return int
      */
-    private function getLocalHoldingStatusFromArray($exemplare)
+    private function getLocalHoldingStatusFromArray(mixed $exemplare): int
     {
         $status = 9999;
 
@@ -27,12 +27,12 @@ class HoldingStatusService
             if (!is_array($exemplar)) {
                 $exemplar = (array)$exemplar;
             }
-            if ($status != 1) {
-                if ($exemplar['elements'] && is_array($exemplar['elements'])) {
+            if ($status !== 1) {
+                if (isset($exemplar['elements']) && is_array($exemplar['elements'])) {
                     $status = $this->getLocalHoldingStatusFromArray($exemplar['elements']);
-                } elseif ($exemplar['_calc_colorcode'] < $status) {
-                    if (!($exemplar['_calc_colorcode'] == 0 && ($status == 2))) {
-                        $status = $exemplar['_calc_colorcode'];
+                } elseif (isset($exemplar['_calc_colorcode']) && $exemplar['_calc_colorcode'] < $status) {
+                    if (!($exemplar['_calc_colorcode'] === 0 && $status === 2)) {
+                        $status = (int)$exemplar['_calc_colorcode'];
                     }
                 }
             }
@@ -53,10 +53,10 @@ class HoldingStatusService
      * @param mixed $copies NULL
      * @return int
      */
-    public function getStatus(Document $document, $copies = [])
+    public function getStatus(Document $document, mixed $copies = []): int
     {
         // Electronic Resource are always accessible. Might needs fine tuning further on.
-        if (in_array('Online', $document['facet_avail'])) {
+        if (in_array('Online', $document['facet_avail'], true)) {
             return 4;
         }
         return $this->getLocalHoldingStatusFromArray($copies);

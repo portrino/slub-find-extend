@@ -48,9 +48,9 @@ class SearchHandler
     /**
      * Known configuration keys.
      *
-     * @var array
+     * @var list<string>
      */
-    protected static $configKeys = [
+    protected static array $configKeys = [
         'CustomMunge', 'DismaxFields', 'DismaxHandler', 'QueryFields',
         'DismaxParams', 'FilterQuery',
     ];
@@ -58,31 +58,31 @@ class SearchHandler
     /**
      * Known boolean operators.
      *
-     * @var array
+     * @var list<string>
      */
-    protected static $booleanOperators = ['AND', 'OR', 'NOT'];
+    protected static array $booleanOperators = ['AND', 'OR', 'NOT'];
 
     /**
      * Search handler specification.
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    protected $specs;
+    protected array $specs = [];
 
     /**
      * Constructor.
      *
-     * @param array  $spec                 Search handler specification
+     * @param array<string, mixed>  $spec  Search handler specification
      * @param string $defaultDismaxHandler Default dismax handler (if no
      * DismaxHandler set in specs).
      */
-    public function __construct(array $spec, $defaultDismaxHandler = 'dismax')
+    public function __construct(array $spec, string $defaultDismaxHandler = 'dismax')
     {
         foreach (self::$configKeys as $key) {
-            $this->specs[$key] = isset($spec[$key]) ? $spec[$key] : [];
+            $this->specs[$key] = $spec[$key] ?? [];
         }
         // Set dismax handler to default if not specified:
-        if (empty($this->specs['DismaxHandler'])) {
+        if ($this->specs['DismaxHandler'] === []) {
             $this->specs['DismaxHandler'] = $defaultDismaxHandler;
         }
     }
@@ -101,7 +101,7 @@ class SearchHandler
      *
      * @see \VuFind\Service\Solr\LuceneSyntaxHelper::containsAdvancedLuceneSyntax()
      */
-    public function createAdvancedQueryString($search)
+    public function createAdvancedQueryString(string $search): string
     {
         return $this->createQueryString($search, true);
     }
@@ -115,7 +115,7 @@ class SearchHandler
      *
      * @see \VuFind\Service\Solr\SearchHandler::createAdvancedQueryString()
      */
-    public function createSimpleQueryString($search)
+    public function createSimpleQueryString(string $search): string
     {
         return $this->createQueryString($search, false);
     }
@@ -127,7 +127,7 @@ class SearchHandler
      *
      * @return string
      */
-    public function createBoostQueryString($search)
+    public function createBoostQueryString(string $search): string
     {
         $boostQuery = [];
         if ($this->hasDismax()) {
@@ -140,7 +140,7 @@ class SearchHandler
                     // query components:
 
                     foreach (explode(' ', $param['value']) as $boostFunction) {
-                        if ($boostFunction) {
+                        if ($boostFunction !== '') {
                             $parts = explode('^', $boostFunction, 2);
                             $boostQuery[] = sprintf(
                                 '_val_:"%s"%s',
@@ -152,7 +152,7 @@ class SearchHandler
                 }
             }
         }
-        if ($boostQuery) {
+        if ($boostQuery !== []) {
             return sprintf(
                 '(%s) AND (*:* OR %s)',
                 $search,
@@ -167,9 +167,9 @@ class SearchHandler
      *
      * @return bool
      */
-    public function hasDismax()
+    public function hasDismax(): bool
     {
-        return !empty($this->specs['DismaxFields']);
+        return $this->specs['DismaxFields'] !== [];
     }
 
     /**
@@ -177,9 +177,9 @@ class SearchHandler
      *
      * @return string
      */
-    public function getDismaxHandler()
+    public function getDismaxHandler(): string
     {
-        return $this->specs['DismaxHandler'];
+        return (string)$this->specs['DismaxHandler'];
     }
 
     /**
@@ -187,17 +187,17 @@ class SearchHandler
      *
      * @return bool
      */
-    public function hasExtendedDismax()
+    public function hasExtendedDismax(): bool
     {
-        return $this->hasDismax() && ($this->getDismaxHandler() == 'edismax');
+        return $this->hasDismax() && $this->getDismaxHandler() === 'edismax';
     }
 
     /**
      * Return defined dismax fields.
      *
-     * @return array
+     * @return list<string>
      */
-    public function getDismaxFields()
+    public function getDismaxFields(): array
     {
         return $this->specs['DismaxFields'];
     }
@@ -205,9 +205,9 @@ class SearchHandler
     /**
      * Return defined dismax parameters.
      *
-     * @return array
+     * @return list<array{name: string, value: string}>
      */
-    public function getDismaxParams()
+    public function getDismaxParams(): array
     {
         return $this->specs['DismaxParams'];
     }
@@ -215,12 +215,12 @@ class SearchHandler
     /**
      * Return the filter query.
      *
-     * @return string
+     * @return string|null
      */
-    public function getFilterQuery()
+    public function getFilterQuery(): ?string
     {
-        return empty($this->specs['FilterQuery'])
-            ? null : $this->specs['FilterQuery'];
+        return $this->specs['FilterQuery'] === []
+            ? null : (string)$this->specs['FilterQuery'];
     }
 
     /**
@@ -228,7 +228,7 @@ class SearchHandler
      *
      * @return bool
      */
-    public function hasFilterQuery()
+    public function hasFilterQuery(): bool
     {
         return (bool)$this->specs['FilterQuery'];
     }
@@ -236,9 +236,9 @@ class SearchHandler
     /**
      * Serialize handler specs as array.
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->specs;
     }
@@ -252,7 +252,7 @@ class SearchHandler
      *
      * @return string
      */
-    protected function dismaxSubquery($search)
+    protected function dismaxSubquery(string $search): string
     {
         $dismaxParams = [];
         foreach ($this->specs['DismaxParams'] as $param) {
@@ -281,9 +281,9 @@ class SearchHandler
      * @param string $search   Search string
      * @param bool   $tokenize Tokenize the search string?
      *
-     * @return string
+     * @return array<string, string>
      */
-    protected function mungeValues($search, $tokenize = true)
+    protected function mungeValues(string $search, bool $tokenize = true): array
     {
         if ($tokenize) {
             $tokens = $this->tokenize($search);
@@ -310,8 +310,8 @@ class SearchHandler
             // also omit quotes if the phrase is already quoted or if there is no
             // whitespace (in which case phrase searching is pointless and might
             // interfere with wildcard behavior):
-            if (strstr($search, '"') || strstr($search, ' NOT ')
-                || !preg_match('/\s/', $search)
+            if (strstr($search, '"') !== false || strstr($search, ' NOT ') !== false
+                || preg_match('/\s/', $search) !== 1
             ) {
                 $mungeValues['onephrase'] = $search;
             } else {
@@ -332,11 +332,14 @@ class SearchHandler
                         $mungeValues[$mungeName] = strtolower($mungeValues[$mungeName]);
                         break;
                     case 'preg_replace':
-                        $mungeValues[$mungeName] = preg_replace(
+                        $mungedValue = preg_replace(
                             $operation[1],
                             $operation[2],
                             $mungeValues[$mungeName]
                         );
+                        if (is_string($mungedValue)) {
+                            $mungeValues[$mungeName] = $mungedValue;
+                        }
                         break;
                     case 'uppercase':
                         $mungeValues[$mungeName] = strtoupper($mungeValues[$mungeName]);
@@ -363,7 +366,7 @@ class SearchHandler
      *
      * @return string
      */
-    protected function createQueryString($search, $advanced = false)
+    protected function createQueryString(string $search, bool $advanced = false): string
     {
         // If this is a basic query and we have Dismax settings (or if we have
         // Extended Dismax available), let's build a Dismax subquery to avoid
@@ -374,7 +377,7 @@ class SearchHandler
             $mungeRules  = $this->mungeRules();
 
             // Do not munge w/o rules
-            if ($mungeRules) {
+            if ($mungeRules !== []) {
                 $mungeValues = $this->mungeValues($search, !$advanced);
                 $query       = $this->munge($mungeRules, $mungeValues);
             } else {
@@ -392,9 +395,9 @@ class SearchHandler
      *
      * @todo Maybe rename?
      *
-     * @return array
+     * @return array<int|string, array<string, mixed>>
      */
-    protected function mungeRules()
+    protected function mungeRules(): array
     {
         return $this->specs['QueryFields'];
     }
@@ -402,13 +405,13 @@ class SearchHandler
     /**
      * Return modified search string after applying the transformation rules.
      *
-     * @param array  $mungeRules  Munge rules
-     * @param array  $mungeValues Munge values
+     * @param array<int|string, array<string, mixed>> $mungeRules  Munge rules
+     * @param array<string, string> $mungeValues Munge values
      * @param string $joiner      Joiner of subqueries
      *
      * @return string
      */
-    protected function munge(array $mungeRules, array $mungeValues, $joiner = 'OR')
+    protected function munge(array $mungeRules, array $mungeValues, string $joiner = 'OR'): string
     {
         $clauses = [];
         foreach ($mungeRules as $clauseident => $clausearray) {
@@ -420,6 +423,7 @@ class SearchHandler
                 $sw = $clausearray;
 
                 $operator = 'or';
+                $weight = null;
 
                 // Last one wins
                 foreach ($sw['operators'] as $operator_name => $operator_weight) {
@@ -434,7 +438,7 @@ class SearchHandler
                     $this->munge($clausearray[$clausearray['field']], $mungeValues, $internalJoin) .
                     ')';
                 // ...and add a weight if we have one
-                if (!is_null($weight) && $weight && $weight > 0) {
+                if ($weight !== null && $weight > 0) {
                     $sstring .= '^' . $weight;
                 }
                 // push it onto the stack of clauses
@@ -448,7 +452,7 @@ class SearchHandler
                     // Add the weight if we have one. Yes, I know, it's redundant
                     // code.
                     $weight = $spec_value;
-                    if (!is_null($weight) && $weight && $weight > 0) {
+                    if ($weight !== null && $weight > 0) {
                         $sstring .= '^' . $weight;
                     }
                     // ..and push it on the stack of clauses
@@ -466,9 +470,9 @@ class SearchHandler
      *
      * @param string $string Search string
      *
-     * @return array
+     * @return list<string>
      */
-    protected function tokenize($string)
+    protected function tokenize(string $string): array
     {
         // Tokenize on spaces and quotes (but ignore escaped quotes)
         $phrases = [];
@@ -486,7 +490,7 @@ class SearchHandler
         while (current($phrases) !== false) {
             $token[] = current($phrases);
             $next    = next($phrases);
-            if (in_array($next, self::$booleanOperators)) {
+            if (in_array($next, self::$booleanOperators, true)) {
                 $token[] = $next;
                 if (next($phrases) === false) {
                     $tokens[] = implode(' ', $token);

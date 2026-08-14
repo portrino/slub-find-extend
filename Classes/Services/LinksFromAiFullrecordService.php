@@ -13,9 +13,9 @@ class LinksFromAiFullrecordService
      * @param object $fullrecord
      * @param string $isil
      * @param bool $resolve
-     * @return array
+     * @return array<int, mixed>
      */
-    public function getLinks($fullrecord, $isil = '', $resolve = false)
+    public function getLinks(object $fullrecord, string $isil = '', bool $resolve = false): array
     {
         return [];
     }

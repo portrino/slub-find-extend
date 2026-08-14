@@ -32,7 +32,7 @@ class Marc21
      * @param string $marc
      * @return File_MARC_Record
      */
-    public function decode($marc)
+    public function decode(string $marc): File_MARC_Record
     {
         LocalVendorAutoloader::load();
 

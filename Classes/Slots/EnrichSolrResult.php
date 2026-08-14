@@ -18,7 +18,9 @@ namespace Slub\SlubFindExtend\Slots;
 use Psr\Log\LoggerAwareTrait;
 use Solarium\Client;
 use Solarium\Core\Client\Adapter\Curl;
+use Solarium\Core\Client\Response;
 use Solarium\QueryType\Select\Result\Document;
+use Solarium\QueryType\Select\Result\Result;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -43,10 +45,10 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
     /**
      * Contains the settings of the current extension
      *
-     * @var array
+     * @var array<string, mixed>
      * @api
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * Contains data to be logged on error
@@ -54,30 +56,31 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
      * @var string
      * @api
      */
-    protected $logData;
+    protected string $logData = '';
 
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     /**
      * Slot to enrich finds detail view
      *
-     * @param array &$assignments
+     * @param array<string, mixed> &$assignments
      */
-    public function detail(&$assignments): void
+    public function detail(array &$assignments): void
     {
         $assignments['enriched'] = ['fields' => []];
+        $enriched = [];
 
         $document = $assignments['document'];
         /* @var $document Document */
 
-        if ($document) {
+        if ($document instanceof Document) {
             $fields = $document->getFields();
             $pageType = (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['type'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['type'] ?? null);
 
-            if ($this->settings['enrich'] && $this->settings['enrich']['detail']) {
+            if (isset($this->settings['enrich']['detail']) && is_array($this->settings['enrich']['detail']) && $this->settings['enrich']['detail'] !== []) {
                 foreach ($this->settings['enrich']['detail'] as $enrichment) {
                     $filter_passed = false;
 
@@ -96,7 +99,7 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
 
                     if ($filter_passed) {
                         $field_data = '';
-                        $user_data = ($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user['username']) ? $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user['username'] : '';
+                        $user_data = (string)($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->user['username'] ?? '');
 
                         $check_fields = is_array($fields[$enrichment['check_field']]) ? $fields[$enrichment['check_field']] : [$fields[$enrichment['check_field']]];
 
@@ -121,15 +124,16 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
                                 $assignments['enriched']['error'] = [
                                     'code' => $e->getMessage(),
                                     'host' => parse_url($enrichment['ws'], PHP_URL_HOST),
-                                    'host_hash' => md5(parse_url($enrichment['ws'], PHP_URL_HOST)),
+                                    'host_hash' => hash('sha256', (string)(parse_url($enrichment['ws'], PHP_URL_HOST) ?? '')),
                                 ];
                             }
-                            if (is_array($enriched) && count($enriched)) {
+                            if ($enriched !== []) {
                                 $assignments['enriched']['fields'] = array_merge($assignments['enriched']['fields'], $enriched);
 
                                 foreach ($assignments['enriched']['fields'] as $key => $value) {
-                                    if ($key != str_replace(' ', '', $key)) {
-                                        $assignments['enriched']['fields'][str_replace(' ', '', $key)] = $assignments['enriched']['fields'][$key];
+                                    $normalizedKey = str_replace(' ', '', (string)$key);
+                                    if ((string)$key !== $normalizedKey) {
+                                        $assignments['enriched']['fields'][$normalizedKey] = $assignments['enriched']['fields'][$key];
                                     }
                                 }
                             }
@@ -145,17 +149,18 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
     /**
      * Slot to enrich finds detail view
      *
-     * @param array &$resultSet
+     * @param Result|array<string, mixed>|null &$resultSet
+     * @param-out Result|array<string, mixed>|null $resultSet
      */
-    public function index(&$resultSet): void
+    public function index(mixed &$resultSet): void
     {
-        if (is_null($resultSet) || !isset($this->settings['enrich']['index'])) {
+        if (!$resultSet instanceof Result || !isset($this->settings['enrich']['index'])) {
             return;
         }
 
         $documents = $resultSet->getDocuments();
 
-        if (!empty($documents)) {
+        if ($documents !== []) {
             if (is_array($this->settings['enrich']['index'])) {
                 foreach ($this->settings['enrich']['index'] as $enrichment) {
                     if (isset($enrichment['check_field']) && isset($enrichment['type']) && isset($enrichment['filter_field'])) {
@@ -170,18 +175,19 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
                         if ($field_passed) {
                             $values = [];
                             foreach ($documents as $document) {
-                                if (!empty($document->getFields()[$enrichment['check_field']])) {
-                                    if (is_array($document->getFields()[$enrichment['check_field']])) {
-                                        $values = array_merge($values, $document->getFields()[$enrichment['check_field']]);
+                                $fieldValue = $document->getFields()[$enrichment['check_field']] ?? null;
+                                if ($fieldValue !== null && $fieldValue !== '' && $fieldValue !== []) {
+                                    if (is_array($fieldValue)) {
+                                        $values = array_merge($values, $fieldValue);
                                     } else {
-                                        array_push($values, $document->getFields()[$enrichment['check_field']]);
+                                        $values[] = $fieldValue;
                                     }
                                 }
                             }
 
-                            $values = array_values(array_filter(array_unique($values)));
+                            $values = array_values(array_filter(array_unique($values), static fn (mixed $value): bool => $value !== null && $value !== ''));
 
-                            if (!empty($values)) {
+                            if ($values !== []) {
                                 $results = [];
                                 switch ($enrichment['type']) {
                                     case 'solr':
@@ -191,13 +197,13 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
                                         break;
                                 }
 
-                                if (!empty($results)) {
+                                if ($results !== []) {
                                     $body = json_decode($resultSet->getResponse()->getBody(), true);
                                     foreach ($body['response']['docs'] as &$document) {
-                                        if (!empty($document[$enrichment['check_field']])) {
+                                        if (($document[$enrichment['check_field']] ?? null) !== null && ($document[$enrichment['check_field']] ?? null) !== '') {
                                             foreach ($results as $item) {
                                                 if ($this->checkForIntersection($document[$enrichment['check_field']], $item->getFields()[$enrichment['filter_field']])) {
-                                                    if (!$document['enriched'] || is_array($document['enriched'])) {
+                                                    if (!isset($document['enriched']) || is_array($document['enriched'])) {
                                                         $document['enriched'][]['fields'] = $item->getFields();
                                                     }
                                                 }
@@ -206,7 +212,11 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
                                     }
 
                                     // rewire the resultSet
-                                    $response = new \Solarium\Core\Client\Response(json_encode($body), $resultSet->getResponse()->getHeaders());
+                                    $encodedBody = json_encode($body);
+                                    if (!is_string($encodedBody)) {
+                                        continue;
+                                    }
+                                    $response = new Response($encodedBody, $resultSet->getResponse()->getHeaders());
                                     $resultSet = new \Solarium\QueryType\Select\Result\Result($resultSet->getQuery(), $response);
                                 }
                             }
@@ -219,21 +229,24 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
 
     /**
      * A safe way to get data from a webservice
-     * @param $url
-     * @return array
+     * @param string $url
+     * @return array<int|string, mixed>
      */
-    private function getSafeData($url)
+    private function getSafeData(string $url): array
     {
         return (array)$this->safe_json_decode($this->getData($url));
     }
 
     /**
      * A safe way to decode stringified json data
-     * @param $value
-     * @return mixed|string
+     * @param array<mixed>|string $value
+     * @return array<int|string, mixed>|string|null
      */
-    private function safe_json_decode($value)
+    private function safe_json_decode(array|string $value): array|string|null
     {
+        if (is_array($value)) {
+            return null;
+        }
         if ($value === '') {
             return '';
         }
@@ -290,32 +303,33 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
 
     /**
      * Decode UTF8 recursively
-     * @param $mixed
-     * @return array|string
+     * @param mixed $mixed
+     * @return array<mixed>|string
      */
-    private function unutf8ize($mixed)
+    private function unutf8ize(mixed $mixed): array|string
     {
         if (is_array($mixed)) {
             foreach ($mixed as $key => $value) {
                 $mixed[$key] = $this->unutf8ize($value);
             }
         } elseif (is_string($mixed)) {
-            return utf8_decode($mixed);
+            return mb_convert_encoding($mixed, 'ISO-8859-1', 'UTF-8');
         }
         return $mixed;
     }
 
-    private function getData($url)
+    private function getData(string $url): string
     {
         $ch = curl_init();
         $timeout = 10;
-        if ($this->settings['enrich'] && $this->settings['enrich']['timeout']) {
-            if ((int)($this->settings['enrich']['timeout']) > 0) {
-                $timeout = (int)($this->settings['enrich']['timeout']);
-            }
+        if (isset($this->settings['enrich']['timeout']) && (int)$this->settings['enrich']['timeout'] > 0) {
+            $timeout = (int)$this->settings['enrich']['timeout'];
+        }
+        if ($url === '') {
+            return '';
         }
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 
@@ -323,27 +337,28 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
 
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if (curl_errno($ch)) {
+        if (curl_errno($ch) > 0) {
             $error = 'Curl error: ' . curl_error($ch);
             $this->logger->warning($error);
             throw new \Exception('LO-AC', 1506332584);
         }
-        if ($http_code != 200) {
+        if ($http_code !== 200) {
             $error = 'Curl error: ' . $http_code . ': ' . $url;
             $this->logger->warning($error);
             throw new \Exception('LO-AC', 9531831929);
         }
 
         curl_close($ch);
-        return $data;
+        return is_string($data) ? $data : '';
     }
 
     /**
-     * @param array $documents
-     * @param array $enrichment
-     * @return array
+     * @param array<int, \Solarium\Core\Query\DocumentInterface> $documents
+     * @param array<int, string> $values
+     * @param array<string, mixed> $enrichment
+     * @return array<int, \Solarium\Core\Query\DocumentInterface>
      */
-    private function solrEnrich($documents, $values, $enrichment)
+    private function solrEnrich(array $documents, array $values, array $enrichment): array
     {
         $connectionSettings = $this->settings['connections'][$this->settings['activeConnection']]['options'];
 
@@ -362,7 +377,7 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
         ];
         $solr = new Client(new Curl(), new EventDispatcher(), $config);
 
-        if ($enrichment['filter_field'] == 'id') {
+        if (($enrichment['filter_field'] ?? null) === 'id') {
             $query = new \Solarium\QueryType\RealtimeGet\Query();
             $query->addIds($values);
             $query->setResponseWriter('json');
@@ -384,9 +399,9 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
      * @param mixed $data2
      * @return bool
      */
-    private function checkForIntersection($data1, $data2)
+    private function checkForIntersection(mixed $data1, mixed $data2): bool
     {
-        if (empty($data1) || empty($data2)) {
+        if ($data1 === null || $data1 === '' || $data1 === [] || $data2 === null || $data2 === '' || $data2 === []) {
             return false;
         }
 
@@ -396,11 +411,11 @@ class EnrichSolrResult implements \Psr\Log\LoggerAwareInterface
             }
         } elseif (is_array($data1) xor is_array($data2)) {
             if (is_array($data1)) {
-                return in_array($data2, $data2);
+                return in_array($data2, $data1, true);
             }
-            return in_array($data1, $data2);
+            return is_array($data2) && in_array($data1, $data2, true);
         } else {
-            return $data1 == $data2;
+            return $data1 === $data2;
         }
         return false;
     }

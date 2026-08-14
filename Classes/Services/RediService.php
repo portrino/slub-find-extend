@@ -10,12 +10,18 @@ class RediService
     public function __construct(private readonly \TYPO3\CMS\Core\Cache\CacheManager $cacheManager)
     {
     }
-    public function getCached($document, $enriched)
+
+    /**
+     * @param array<string, mixed> $document
+     * @param array<string, mixed>|null $enriched
+     * @return array<string, mixed>|null
+     */
+    public function getCached(array $document, ?array $enriched): ?array
     {
         $cache = $this->cacheManager->getCache('resolv_link_electronic');
-        $cacheIdentifier = sha1($document['id']);
+        $cacheIdentifier = hash('sha256', (string)$document['id']);
         $entry = $cache->get($cacheIdentifier);
-        if (!$entry) {
+        if (!is_array($entry)) {
             // Try to resolve article against redi
             $entry = $this->getElectronicHoldingFromData($document, $enriched);
             $cache->set($cacheIdentifier, $entry);
@@ -26,30 +32,36 @@ class RediService
 
     /**
      * Tries to resolve Article against holdings
+     *
+     * @param array<string, mixed> $document
+     * @param array<string, mixed>|null $enriched
+     * @return array<string, mixed>|null
      */
-    private function getElectronicHoldingFromData($document, $enriched)
+    private function getElectronicHoldingFromData(array $document, ?array $enriched): ?array
     {
         $status = [];
 
-        if (!$enriched) {
-            return;
+        if (!is_array($enriched) || !isset($enriched['fields']) || !is_array($enriched['fields'])) {
+            return null;
         }
 
-        $article = $enriched['fields']['rft.atitle'];
-        $firstISSN = $enriched['fields']['rft.issn'][0];
-        $volume = $enriched['fields']['rft.volume'];
-        $spage = $enriched['fields']['rft.spage'];
-        $epage = $enriched['fields']['rft.epage'];
-        $pages = $enriched['fields']['rft.pages'];
-        $issue = $enriched['fields']['rft.issue'];
-        $genre = $enriched['fields']['rft.genre'];
-        $date = $enriched['fields']['rft.date'];
-        $language = $enriched['fields']['languages'][0];
-        $doi = $enriched['fields']['doi'];
-        $jtitle = $enriched['fields']['rft.jtitle'];
-        $firstAuthor = (array)$enriched['fields']['authors'][0];
-        $firstAuthorAulast = $firstAuthor['rft.aulast'];
-        $firstAuthorAufirst = $firstAuthor['rft.aufirst'];
+        $fields = $enriched['fields'];
+
+        $article = (string)($fields['rft.atitle'] ?? '');
+        $firstISSN = (string)($fields['rft.issn'][0] ?? '');
+        $volume = (string)($fields['rft.volume'] ?? '');
+        $spage = (string)($fields['rft.spage'] ?? '');
+        $epage = (string)($fields['rft.epage'] ?? '');
+        $pages = (string)($fields['rft.pages'] ?? '');
+        $issue = (string)($fields['rft.issue'] ?? '');
+        $genre = (string)($fields['rft.genre'] ?? '');
+        $date = (string)($fields['rft.date'] ?? '');
+        $language = (string)($fields['languages'][0] ?? '');
+        $doi = (string)($fields['doi'] ?? '');
+        $jtitle = (string)($fields['rft.jtitle'] ?? '');
+        $firstAuthor = (array)($fields['authors'][0] ?? []);
+        $firstAuthorAulast = (string)($firstAuthor['rft.aulast'] ?? '');
+        $firstAuthorAufirst = (string)($firstAuthor['rft.aufirst'] ?? '');
 
         $url = 'http://www-s.redi-bw.de/links/?rl_site=slub&atitle=' . urlencode($article) .
             '&issn=' . urlencode($firstISSN) .
@@ -66,40 +78,43 @@ class RediService
             '&doi=' . urlencode($doi) .
             '&title=' . urlencode($jtitle);
 
-        $doc = new \DOMDocument();
-
         $html = $this->getData($url);
-        if (strlen($html) === 0) {
-            return;
+        if ($html === '') {
+            return null;
         }
 
+        $doc = new \DOMDocument();
         libxml_use_internal_errors(true);
         @$doc->loadHTML($html);
 
-        $xpath = new \DOMXpath($doc);
+        $xpath = new \DOMXPath($doc);
 
-        $infolink = $xpath->query("//span[contains(@class,'t_infolink')]/a/@href")->item(0)->nodeValue;
-
-        $access = $xpath->query("//div[@id ='t_ezb']/div/p/b")->item(0)->nodeValue;
-
-        $doilink = $xpath->query("//dd[contains(@class,'doi_d')]/span/a/@href")->item(0)->nodeValue;
+        $infolink = $this->getNodeValue($xpath, "//span[contains(@class,'t_infolink')]/a/@href");
+        $access = $this->getNodeValue($xpath, "//div[@id ='t_ezb']/div/p/b");
+        $doilink = $this->getNodeValue($xpath, "//dd[contains(@class,'doi_d')]/span/a/@href");
 
         $status_code = 10;
         $url = '';
         $via = '';
+        $oa_via = '';
+        $oa_more = '';
 
         $links = [];
 
-        for ($i = 0; $i < $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p")->length; $i++) {
+        $ezbNodes = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p");
+        $resultCount = $ezbNodes instanceof \DOMNodeList ? $ezbNodes->length : 0;
+
+        for ($i = 0; $i < $resultCount; $i++) {
             $link = [];
 
             $ezb_status_code = 10;
 
-            $ezb_status = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class, 't_ezb_yellow') or contains(@class, 't_ezb_green') or contains(@class, 't_ezb_red')]/@class")->item($i)->nodeValue;
-            $ezb_status_via = trim($xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p")->item($i)->nodeValue);
-            $ezb_url = $xpath->query("//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href")->item($i)->nodeValue;
+            $ezb_status = $this->getNodeValue($xpath, "//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class, 't_ezb_yellow') or contains(@class, 't_ezb_green') or contains(@class, 't_ezb_red')]/@class", $i);
+            $ezb_status_via = trim($this->getNodeValue($xpath, "//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p", $i));
+            $ezb_url = $this->getNodeValue($xpath, "//div[@id ='t_ezb']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href", $i);
 
-            $ezb_via = substr($ezb_status_via, strpos($ezb_status_via, 'via')+4, -4);
+            $viaPosition = strpos($ezb_status_via, 'via');
+            $ezb_via = $viaPosition === false ? '' : substr($ezb_status_via, $viaPosition + 4, -4);
 
             switch ($ezb_status) {
                 case 't_ezb_green':
@@ -122,17 +137,17 @@ class RediService
             $links[] = $link;
         }
 
-        $oa_url = $xpath->query("//div[@id ='t_oadoi']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href")->item(0)->nodeValue;
+        $oa_url = $this->getNodeValue($xpath, "//div[@id ='t_oadoi']/div/div[contains(@class,'t_ezb_result')]/p/span[contains(@class,'t_link')]/a/@href");
 
         if (strlen($oa_url) > 0) {
-            $oa_via = trim($xpath->query("//div[@id ='t_oadoi']/div/div[contains(@class,'t_ezb_result')]/p")->item(0)->nodeValue);
+            $oa_via = trim($this->getNodeValue($xpath, "//div[@id ='t_oadoi']/div/div[contains(@class,'t_ezb_result')]/p"));
             preg_match('/\(via (.*?), (.*)\)/', $oa_via, $output_array);
-            $oa_via = $output_array[1];
-            $oa_more = $output_array[2];
+            $oa_via = $output_array[1] ?? '';
+            $oa_more = $output_array[2] ?? '';
         }
 
         $status['infolink'] = $infolink;
-        $status['access'] = $access == 'freigeschaltet' ? 1 : 0;
+        $status['access'] = $access === 'freigeschaltet' ? 1 : 0;
         $status['links'] = $links;
         $status['oa_url'] = $oa_url;
         $status['oa_via'] = $oa_via;
@@ -142,17 +157,36 @@ class RediService
         return $status;
     }
 
-    private function getData($url)
+    private function getData(string $url): string
     {
         $ch = curl_init();
         $timeout = 10;
+        if ($url === '') {
+            return '';
+        }
+
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $data = curl_exec($ch);
         curl_close($ch);
-        return $data;
+        return is_string($data) ? $data : '';
+    }
+
+    private function getNodeValue(\DOMXPath $xpath, string $expression, int $index = 0): string
+    {
+        $nodes = $xpath->query($expression);
+        if (!$nodes instanceof \DOMNodeList) {
+            return '';
+        }
+
+        $node = $nodes->item($index);
+        if ($node === null) {
+            return '';
+        }
+
+        return $node->nodeValue ?? '';
     }
 }

@@ -29,39 +29,44 @@ namespace Slub\SlubFindExtend\Task;
 /**
  * @license http://www.gnu.org/licenses/gpl.html GNU General Public License, version 3 or later
  */
-use TYPO3\CMS\Scheduler\Task\Enumeration\Action;
+use TYPO3\CMS\Scheduler\SchedulerManagementAction;
+use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class SendEnrichSolrResultLogTaskAdditionalFieldProvider implements \TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface
 {
     /**
      * Render additional information fields within the scheduler backend.
      *
-     * @param array                                                     $taskInfo        Array information of task to return
-     * @param CleanUpTask                                            $task            Task object
+     * @param array<array-key, mixed>                                  $taskInfo        Array information of task to return
+     * @param AbstractTask|null                                         $task            Task object
      * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the BE module of the Scheduler
      *
-     * @return array Additional fields
+     * @return array<string, array<string, string>> Additional fields
      * @see \TYPO3\CMS\Scheduler\AdditionalFieldProviderInterface->getAdditionalFields($taskInfo, $task, $schedulerModule)
      */
     public function getAdditionalFields(
         array &$taskInfo,
         $task,
         \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule
-    ) {
+    ): array {
         $additionalFields = [];
+        $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
 
-        if (empty($taskInfo['emails'])) {
-            if ($schedulerModule->getCurrentAction()->equals(Action::ADD)) {
+        if (($taskInfo['emails'] ?? '') === '') {
+            if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 $taskInfo['emails'] = '';
-            } elseif ($schedulerModule->getCurrentAction()->equals(Action::EDIT)) {
+            } elseif (
+                $currentSchedulerModuleAction === SchedulerManagementAction::EDIT
+                && $task instanceof SendEnrichSolrResultLogTask
+            ) {
                 $taskInfo['emails'] = $task->getEmails();
             } else {
-                $taskInfo['emails'] = $task->setEmails();
+                $taskInfo['emails'] = '';
             }
         }
 
         $fieldId = 'task_emails';
-        $fieldCode = '<input type="text" class="form-control" name="tx_scheduler[slub_find_extend][emails]" id="' . $fieldId . '" value="' . htmlspecialchars($taskInfo['emails']) . '"/>';
+        $fieldCode = '<input type="text" class="form-control" name="tx_scheduler[slub_find_extend][emails]" id="' . $fieldId . '" value="' . htmlspecialchars((string)$taskInfo['emails'], ENT_QUOTES) . '"/>';
         $label = $GLOBALS['LANG']->sL('LLL:EXT:slub_find_extend/Resources/Private/Language/locallang_be.xlf:tasks.enricherrorlog.emails');
         $additionalFields[$fieldId] = [
             'code'  => $fieldCode,
@@ -75,7 +80,7 @@ class SendEnrichSolrResultLogTaskAdditionalFieldProvider implements \TYPO3\CMS\S
      * This method checks any additional data that is relevant to the specific task.
      * If the task class is not relevant, the method is expected to return TRUE.
      *
-     * @param array                                                     $submittedData   Reference to the array containing the data submitted by the user
+     * @param array<array-key, mixed>                                  $submittedData   Reference to the array containing the data submitted by the user
      * @param \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule Reference to the BE module of the Scheduler
      *
      * @return bool TRUE if validation was ok (or selected class is not relevant), FALSE otherwise
@@ -83,8 +88,8 @@ class SendEnrichSolrResultLogTaskAdditionalFieldProvider implements \TYPO3\CMS\S
     public function validateAdditionalFields(
         array &$submittedData,
         \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController $schedulerModule
-    ) {
-        if (strlen($submittedData['slub_find_extend']['emails']) > 0) {
+    ): bool {
+        if (strlen((string)($submittedData['slub_find_extend']['emails'] ?? '')) > 0) {
             return true;
         }
 
@@ -95,12 +100,13 @@ class SendEnrichSolrResultLogTaskAdditionalFieldProvider implements \TYPO3\CMS\S
      * This method is used to save any additional input into the current task object
      * if the task class matches.
      *
-     * @param array                                  $submittedData Array containing the data submitted by the user
+     * @param array<array-key, mixed>                $submittedData Array containing the data submitted by the user
      * @param \TYPO3\CMS\Scheduler\Task\AbstractTask $task          Reference to the current task object
      */
     public function saveAdditionalFields(array $submittedData, \TYPO3\CMS\Scheduler\Task\AbstractTask $task): void
     {
-        /** @var $task CleanUpTask */
-        $task->setEmails($submittedData['slub_find_extend']['emails']);
+        if ($task instanceof SendEnrichSolrResultLogTask) {
+            $task->setEmails((string)($submittedData['slub_find_extend']['emails'] ?? ''));
+        }
     }
 }

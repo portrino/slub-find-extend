@@ -16,9 +16,9 @@ class FulltextService
      * @param \File_MARC_Record $record NULL
      * @return bool|string
      */
-    public function getFulltextLink(Document $document, $record = null)
+    public function getFulltextLink(Document $document, ?\File_MARC_Record $record = null): bool|string
     {
-        if ((in_array('Online', $document['facet_avail'])) && (strlen($document['url'][0]) > 0)) {
+        if (in_array('Online', $document['facet_avail'], true) && strlen($document['url'][0]) > 0) {
             return sprintf(self::RESOLVER_BASE, $document['url'][0]);
         }
         if (($document['format'][0] === 'Electronic Resource (Remote Access)') && (strlen($document['url'][0]) > 0)) {

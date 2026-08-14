@@ -28,15 +28,15 @@ class ModifySolrResult
     /**
      * Contains the settings of the current extension
      *
-     * @var array
+     * @var array<string, mixed>
      * @api
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     public function __construct(?ConfigurationManagerInterface $configurationManager = null)
     {
@@ -47,14 +47,14 @@ class ModifySolrResult
     /**
      * Slot to decode data from Solr result to use in templates
      *
-     * @param array &$assignments
+     * @param array<string, mixed> &$assignments
      */
-    public function decode(&$assignments): void
+    public function decode(array &$assignments): void
     {
         $document = $assignments['document'];
         /* @var $document Document */
 
-        if ($document && $this->settings['decode']) {
+        if ($document instanceof Document && isset($this->settings['decode']) && is_array($this->settings['decode'])) {
             $fields = $document->getFields();
 
             foreach ($this->settings['decode'] as $decoding) {
@@ -90,19 +90,21 @@ class ModifySolrResult
     /**
      * Slot to filter data from Solr result against blacklist values
      *
-     * @param array &$assignments
+     * @param array<string, mixed> &$assignments
      */
-    public function blacklist(&$assignments): void
+    public function blacklist(array &$assignments): void
     {
         $document = $assignments['document'];
 
-        if ($document && $this->settings['blacklist']) {
+        if ($document instanceof Document && isset($this->settings['blacklist']) && is_array($this->settings['blacklist'])) {
             $fields = $document->getFields();
 
             foreach ($this->settings['blacklist'] as $blacklistName => $blacklistValues) {
                 if (isset($fields[$blacklistName]) && is_array($fields[$blacklistName]) && is_array($blacklistValues)) {
-                    $fields[$blacklistName] = preg_grep('/^(' . str_replace('/', '\/', implode('|', $blacklistValues)) . ')$/', $fields[$blacklistName], PREG_GREP_INVERT);
-                    $fields[$blacklistName] = array_values($fields[$blacklistName]);
+                    $filteredValues = preg_grep('/^(' . str_replace('/', '\/', implode('|', $blacklistValues)) . ')$/', $fields[$blacklistName], PREG_GREP_INVERT);
+                    if (is_array($filteredValues)) {
+                        $fields[$blacklistName] = array_values($filteredValues);
+                    }
                 }
             }
 
@@ -113,9 +115,9 @@ class ModifySolrResult
     /**
      * Slot to enrich finds detail view
      *
-     * @param array &$resultSet
+     * @param mixed $resultSet
      */
-    public function index(&$resultSet)
+    public function index(mixed &$resultSet): void
     {
     }
 }

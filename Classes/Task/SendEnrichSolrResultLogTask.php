@@ -33,9 +33,9 @@ class SendEnrichSolrResultLogTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
      *
      * @var string
      */
-    protected $emails;
+    protected string $emails = '';
 
-    public function execute()
+    public function execute(): bool
     {
         $successfullyExecuted = true;
 
@@ -48,13 +48,17 @@ class SendEnrichSolrResultLogTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
 
         if (file_exists(\TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult.log')) {
             rename(\TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult.log', \TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult_process.log');
+            $logContent = file_get_contents(\TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult_process.log');
+            if ($logContent === false) {
+                throw new \RuntimeException('Cannot read EnrichSolrResult_process.log', 1755253687);
+            }
 
             $mail = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
             $mail
                 ->setSubject('SLUB Katalog: Enrichment Fehler vom ' . date('d.m.Y'))
                 ->setFrom(['noreply@slub-dresden.de' => 'SLUB TYPO3 Server'])
                 ->setTo($to)
-                ->text(file_get_contents(\TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult_process.log'))
+                ->text($logContent)
                 ->send();
 
             unlink(\TYPO3\CMS\Core\Core\Environment::getVarPath() . '/log/EnrichSolrResult_process.log');
@@ -76,7 +80,7 @@ class SendEnrichSolrResultLogTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
      *
      * @param string $emails E-Mails to send log to
      */
-    public function setEmails($emails): void
+    public function setEmails(string $emails): void
     {
         $this->emails = $emails;
     }
@@ -86,7 +90,7 @@ class SendEnrichSolrResultLogTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask
      *
      * @return string $emails E-Mails to send log to
      */
-    public function getEmails()
+    public function getEmails(): string
     {
         return $this->emails;
     }

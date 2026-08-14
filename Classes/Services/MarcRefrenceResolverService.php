@@ -15,10 +15,10 @@ class MarcRefrenceResolverService
      *
      * @param string $path
      * @param object $record
-     * @param bool $index
-     * @return array|bool
+     * @param int|null $index
+     * @return \File_MARC_Reference|array<mixed>|false
      */
-    public function resolveReference($path, $record, $index = null)
+    public function resolveReference(string $path, object $record, ?int $index = null): \File_MARC_Reference|array|false
     {
         LocalVendorAutoloader::load();
 
@@ -29,8 +29,8 @@ class MarcRefrenceResolverService
         $reference = new File_MARC_Reference($path, $record);
         $content = $reference->content;
 
-        if ($index !== null && is_array($content)) {
-            return $content[$index];
+        if ($index !== null) {
+            return $content[$index] ?? false;
         }
         return $reference;
     }

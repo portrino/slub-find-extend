@@ -12,11 +12,11 @@ class SlubCatalogId implements StaticMappableAspectInterface
 {
     public function generate(string $id): ?string
     {
-        return empty($id) ? null : (string)$id;
+        return $id === '' ? null : $id;
     }
 
     public function resolve(string $id): ?string
     {
-        return empty($id) ? null : (string)$id;
+        return $id === '' ? null : $id;
     }
 }

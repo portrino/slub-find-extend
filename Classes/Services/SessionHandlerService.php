@@ -13,24 +13,23 @@ use TYPO3\CMS\Core\SingletonInterface;
  */
 class SessionHandlerService implements SingletonInterface
 {
-    private $prefixKey = 'slub_find_extend_';
+    private string $prefixKey = 'slub_find_extend_';
 
     /**
      * Returns the object stored in the user´s PHP session
-     * @return object the stored object
+     * @return mixed the stored object
      */
-    public function restoreFromSession($key)
+    public function restoreFromSession(string $key): mixed
     {
         $sessionData = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->getKey('ses', $this->prefixKey . $key);
-        return unserialize($sessionData);
+        return unserialize((string)$sessionData, ['allowed_classes' => true]);
     }
 
     /**
      * Writes an object into the PHP session
-     * @param    $object any serializable object to store into the session
-     * @return   SessionHandlerService this
+     * @param mixed $object any serializable object to store into the session
      */
-    public function writeToSession($object, $key)
+    public function writeToSession(mixed $object, string $key): SessionHandlerService
     {
         $sessionData = serialize($object);
         $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->setKey('ses', $this->prefixKey . $key, $sessionData);
@@ -40,16 +39,15 @@ class SessionHandlerService implements SingletonInterface
 
     /**
      * Cleans up the session: removes the stored object from the PHP session
-     * @return   SessionHandlerService this
      */
-    public function cleanUpSession($key)
+    public function cleanUpSession(string $key): SessionHandlerService
     {
         $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->setKey('ses', $this->prefixKey . $key, null);
         $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user')->storeSessionData();
         return $this;
     }
 
-    public function setPrefixKey($prefixKey): void
+    public function setPrefixKey(string $prefixKey): void
     {
         $this->prefixKey = $prefixKey;
     }

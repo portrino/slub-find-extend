@@ -2,7 +2,10 @@
 
 namespace Slub\SlubFindExtend\Slots;
 
+use Psr\Http\Message\ResponseFactoryInterface;
 use Solarium\QueryType\Select\Result\Document;
+use Solarium\QueryType\Select\Result\Result;
+use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
@@ -19,20 +22,20 @@ class HandleOneHit
     /**
      * Contains the settings of the current extension
      *
-     * @var array
+     * @var array<string, mixed>
      * @api
      */
-    protected $settings;
+    protected array $settings;
 
     /**
      * @var UriBuilder
      */
-    protected $uriBuilder;
+    protected UriBuilder $uriBuilder;
 
     /**
      * @var ConfigurationManagerInterface
      */
-    protected $configurationManager;
+    protected ConfigurationManagerInterface $configurationManager;
 
     public function __construct(?ConfigurationManagerInterface $configurationManager = null, ?UriBuilder $uriBuilder = null)
     {
@@ -44,34 +47,46 @@ class HandleOneHit
     /**
      * Slot to handle one hit results
      *
-     * @param array &$resultSet
+     * @param Result|mixed $resultSet
      */
-    public function index(&$resultSet): void
+    public function index(mixed &$resultSet): void
     {
         $idhit = false;
-        if (isset($this->settings['handleOnHit']) && $this->settings['handleOnHit'] == '0') {
+        if (($this->settings['handleOnHit'] ?? '') === '0') {
             return;
         }
 
+        $request = $GLOBALS['TYPO3_REQUEST'];
+        $queryParams = $request->getQueryParams();
+        $findArguments = is_array($queryParams['tx_find_find'] ?? null) ? $queryParams['tx_find_find'] : [];
+        $facetArguments = is_array($findArguments['facet'] ?? null) ? $findArguments['facet'] : [];
+        $pageType = (int)($queryParams['type'] ?? 0);
+
         if (
-            $resultSet
-            && ($resultSet->getNumFound() === 1)
-            && ((is_array($_GET['tx_find_find']['facet'])) && (count($_GET['tx_find_find']['facet']) === 0))
-            && (!$_GET['type'] > 0)
+            $resultSet instanceof Result
+            && $resultSet->getNumFound() === 1
+            && count($facetArguments) === 0
+            && $pageType <= 0
         ) {
             /* @var $document Document */
             $document = $resultSet->getDocuments()[0];
-            foreach ($resultSet->getHighlighting()->getResult($document['id'])->getFields() as $key => $value) {
-                if (in_array($key, $this::IDFIELDS)) {
+            $documentId = (string)($document->getFields()['id'] ?? '');
+            if ($documentId === '') {
+                return;
+            }
+
+            foreach ($resultSet->getHighlighting()->getResult($documentId)->getFields() as $key => $value) {
+                if (in_array($key, self::IDFIELDS, true)) {
                     $idhit = true;
                 }
             }
 
             if ($idhit) {
-                $uri = $this->uriBuilder->uriFor('detail', ['id' => $document['id'], 'underlyingQuery' => ['q' => $_GET['tx_find_find']['q'], 'position' => 1]], 'Search', 'find', 'Find');
-
-                header('Location: ' . $uri, true, 302);
-                die();
+                $uri = $this->uriBuilder->uriFor('detail', ['id' => $documentId, 'underlyingQuery' => ['q' => $findArguments['q'] ?? [], 'position' => 1]], 'Search', 'find', 'Find');
+                $response = GeneralUtility::makeInstance(ResponseFactoryInterface::class)
+                    ->createResponse(302)
+                    ->withHeader('Location', $uri);
+                throw new PropagateResponseException($response, 1755241149);
             }
         }
     }
