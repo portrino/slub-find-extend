@@ -54,10 +54,10 @@ class ReduceArrayViewHelper extends AbstractViewHelper
                     $valueKeys = array_map('trim', explode(',', $value));
 
                     if (is_array($valueKeys) && (count($valueKeys) === 1)) {
-                        $newPart[$key] = $part[$valueKeys[0]];
+                        $newPart[$key] = $part[$valueKeys[0]] ?? null;
                     } elseif (count($valueKeys) > 0) {
                         foreach ($valueKeys as $valueKey) {
-                            if (!is_array($newPart[$key])) {
+                            if (!is_array($newPart[$key] ?? null)) {
                                 $newPart[$key] = [];
                             }
 
